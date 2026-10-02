@@ -180,38 +180,48 @@ export function Calendar() {
         <SectionTitle hindi="त्योहार की तिथि" english="Festival dates" />
         <div className="space-y-3">
           {festivals.map((festival) => (
-            <div key={festival.id} className="flex items-center justify-between gap-3">
-              <span className="text-sm font-bold text-ink-900">
-                {festival.name}
-                {festival.estimated ? (
-                  <span className="ml-2 rounded-full bg-cream-300 px-2 py-0.5 text-[10px] font-semibold text-ink-500">
-                    अनुमानित
-                  </span>
-                ) : null}
-              </span>
-              <input
-                type="date"
-                value={festival.date}
-                onChange={(event) => updateFestivalDate(festival.id, event.target.value)}
-                className="rounded-2xl border border-saffron-200 bg-white px-3 py-2 text-sm font-semibold text-ink-900"
-              />
+            <div key={festival.id} className="rounded-2xl bg-cream-200/50 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-bold text-ink-900">{festival.name}</span>
+                <input
+                  type="date"
+                  value={festival.date}
+                  onChange={(event) => updateFestivalDate(festival.id, event.target.value)}
+                  className="rounded-xl border border-saffron-200 bg-white px-3 py-2 text-sm font-semibold text-ink-900"
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] font-semibold text-saffron-700">
+                स्रोत: {festival.source}
+              </p>
+              {festival.note ? (
+                <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{festival.note}</p>
+              ) : null}
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          चाँद के हिसाब से वाले त्योहार पंचांग से बदलते हैं। सही तिथि यहाँ ठीक कर लीजिए।
+
+        <p className="mt-3 rounded-2xl bg-gold-200/40 px-4 py-3 text-xs leading-[1.8] text-ink-700">
+          ये तिथियाँ <b>Drik Panchang</b> (drikpanchang.com) से ली गई हैं। भारत के पंचांग के
+          हिसाब से चाँद वाले त्योहार एक दिन ऊपर-नीचे हो सकते हैं, और दूसरे देशों में यही तिथि
+          एक दिन पहले पड़ सकती है। अपने इलाके की पंचांग से मिलाकर ऊपर वाली तारीख बदल दीजिए।
         </p>
+
         <button
           type="button"
           onClick={() => setEditing(!editing)}
-          className="mt-3 text-xs font-bold text-saffron-700 underline underline-offset-4"
+          className="pressable mt-3 text-xs font-bold text-saffron-700 underline underline-offset-4"
         >
-          {editing ? "बंद करें" : "कैसे ठीक करें?"}
+          {editing ? "बंद करें" : "स्रोत देखें"}
         </button>
         {editing ? (
-          <p className="mt-2 rounded-2xl bg-cream-200/70 px-4 py-3 text-xs leading-relaxed text-ink-700">
-            अपने इलाके के पंचांग या धर्मप्रधान से तिथि जाँचकर ऊपर वाली तारीख बदल दीजिए।
-          </p>
+          <div className="mt-2 space-y-1.5 rounded-2xl bg-cream-200/70 px-4 py-3 text-xs leading-[1.8] text-ink-700">
+            <p>• चैत्र पूर्णिमा (हनुमान जयंती): drikpanchang.com/vrats/purnimasidates.html</p>
+            <p>• राम नवमी: drikpanchang.com/hindu-festivals/rama-navami</p>
+            <p className="pt-1 text-ink-500">
+              अपने इलाके के पंचांग या धर्मप्रधान से भी तिथि जाँच लीजिए — पंचांग हर जगह एक
+              जैसा नहीं होता।
+            </p>
+          </div>
         ) : null}
       </Card>
     </div>
