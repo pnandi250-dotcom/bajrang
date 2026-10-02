@@ -72,7 +72,7 @@ export function Home({
       <div className="mt-6">
         <p className="text-sm font-semibold text-saffron-700">{partOfDay}</p>
         <h1 className="mt-1 text-[28px] leading-snug font-extrabold text-ink-900">
-          जय श्री राम, {firstName} 🙏
+          जय श्री राम{firstName ? `, ${firstName}` : ""} 🙏
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-ink-500">
           {state.doneToday
