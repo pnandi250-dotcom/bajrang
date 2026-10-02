@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+@theme {
+  --color-saffron-50: #fff4ed;
+  --color-saffron-100: #ffe6d5;
+  --color-saffron-200: #ffc9a8;
+  --color-saffron-300: #ffa374;
+  --color-saffron-400: #ff8449;
+  --color-saffron-500: #ff6b35;
+  --color-saffron-600: #e8531f;
+  --color-saffron-700: #bd3e14;
+  --color-saffron-800: #963218;
+  --color-saffron-900: #782c19;
+
+  --color-sindoor-400: #e0483c;
+  --color-sindoor-500: #c1272d;
+  --color-sindoor-600: #a01b23;
+  --color-sindoor-700: #7d131b;
+  --color-sindoor-800: #5a0d14;
+
+  --color-cream-50: #fffdf9;
+  --color-cream-100: #fff7ec;
+  --color-cream-200: #fdeeda;
+  --color-cream-300: #f8e2c8;
+  --color-cream-400: #efd2ab;
+
+  --color-gold-200: #f7e3ae;
+  --color-gold-300: #f0d083;
+  --color-gold-400: #e8b24a;
+  --color-gold-500: #d99a2b;
+  --color-gold-600: #b47c1c;
+
+  --color-ink-500: #7a5a44;
+  --color-ink-700: #4b2f1d;
+  --color-ink-900: #2f1a0d;
+
+  --font-devanagari: "Nirmala UI", "Noto Sans Devanagari", "Mangal", sans-serif;
+
+  --shadow-soft: 0 10px 30px -12px rgb(120 44 25 / 0.28);
+  --shadow-glow: 0 0 0 1px rgb(232 178 74 / 0.35), 0 12px 40px -14px rgb(232 178 74 / 0.55);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-cream-100 text-ink-900 font-devanagari antialiased;
+    margin: 0;
+    overscroll-behavior-y: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* देवनागरी में अक्षरों के ऊपर-नीचे के निशान होते हैं,
+     इसलिए लाइन-स्पेसिंग सामान्य से ज़्यादा लगती है। */
+  body {
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  button {
+    font-family: inherit;
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea {
+    font-family: inherit;
+  }
+
+  /* Visible, warm focus ring for keyboard users */
+  :focus-visible {
+    outline: 3px solid var(--color-saffron-500);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-saffron-200);
+    color: var(--color-ink-900);
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .app-shell {
+    max-width: 480px;
+    margin-inline: auto;
+    min-height: 100dvh;
+  }
+
+  /* बटन/कार्ड दबाने पर हल्की प्रतिक्रिया — तभ तक हाथ लगा रहे */
+  .pressable {
+    transition:
+      transform 140ms ease,
+      opacity 140ms ease;
+  }
+
+  .pressable:active {
+    transform: scale(0.972);
+  }
+
+  .gold-text {
+    background: linear-gradient(100deg, #b47c1c, #f0d083 40%, #b47c1c 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+/* साँस जैसी धीमी तरंग — पूजा के दौरान मन शांत करने के लिए */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ring-pop {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(-1.5deg);
+  }
+  50% {
+    transform: scale(1.09) rotate(1.5deg);
+  }
+}
+
+.animate-floaty {
+  animation: floaty 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+
+.animate-breathe {
+  animation: breathe 7s ease-in-out infinite;
+}
+
+.animate-flame {
+  animation: flame-flicker 2.2s ease-in-out infinite;
+}
+
+.animate-rise {
+  animation: rise-fade 0.45s ease-out both;
+}
+
+.animate-ring-pop {
+  animation: ring-pop 1.8s ease-out infinite;
+}
+
+/* कार्ड एक-एक करके आएँ — पर धीरे, ताकि शांति बनी रहे */
+.stagger > * {
+  animation: rise-fade 0.5s ease-out both;
+}
+
+.stagger > *:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 0.26s;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 0.32s;
+}
+.stagger > *:nth-child(n + 7) {
+  animation-delay: 0.38s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-floaty,
+  .animate-glow,
+  .animate-breathe,
+  .animate-flame,
+  .animate-rise,
+  .animate-ring-pop,
+  .stagger > * {
+    animation: none;
+  }
+
+  .pressable:active {
+    transform: none;
+  }
+}

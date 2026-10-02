@@ -1,0 +1,285 @@
+import { useState } from "react";
+import { actions, useDerivedState } from "../lib/store";
+import { formatTime, normalizeTime, toHindiDigits } from "../lib/date";
+import { formatNextReminder, requestPermission, reminderText, sendTestReminder } from "../lib/reminder";
+import { Card, SectionTitle } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { playChime } from "../lib/audio";
+import { cn } from "../lib/utils";
+
+const TIME_PRESETS = ["05:30", "06:00", "06:30", "07:00", "07:30", "08:00"];
+
+export function Settings({ onReset }: { onReset: () => void }) {
+  const state = useDerivedState();
+  const [name, setName] = useState(state.profile.name);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  async function toggleNotifications() {
+    const next = !state.profile.reminderEnabled;
+    if (next) {
+      const granted = await requestPermission();
+      actions.updateProfile({ reminderEnabled: granted });
+      setNotice(
+        granted
+          ? "चालू — रोज़ सुबह संदेश आएगा।"
+          : "ब्राउज़र ने इजाज़त नहीं दी। फ़ोन की अलार्म में समय लगा लीजिए।",
+      );
+      return;
+    }
+    actions.updateProfile({ reminderEnabled: false });
+    setNotice("बंद कर दिया।");
+  }
+
+  async function sendTest() {
+    const sent = await sendTestReminder(state.profile.name);
+    setNotice(sent ? "संदेश भेज दिया — देखिए।" : "संदेश नहीं जा सका।");
+  }
+
+  return (
+    <div className="safe-top px-5 pt-3 pb-6">
+      <h1 className="text-3xl font-extrabold text-ink-900">सेटिंग</h1>
+      <p className="mt-1 text-sm font-semibold tracking-wide text-ink-500 uppercase">Settings</p>
+
+      <Card className="mt-5">
+        <SectionTitle hindi="आपका नाम" english="Name" />
+        <div className="flex gap-2">
+          <input
+            value={name}
+            maxLength={40}
+            onChange={(event) => setName(event.target.value)}
+            className="min-w-0 flex-1 rounded-2xl border-2 border-saffron-200 bg-white px-4 py-3 text-lg font-semibold text-ink-900"
+          />
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => actions.updateProfile({ name: name.trim() })}
+          >
+            सहेजें
+          </Button>
+        </div>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="रोज़ का संदेश" english="Daily reminder" />
+        <Toggle
+          checked={state.profile.reminderEnabled}
+          onChange={toggleNotifications}
+          label="याद दिलाना चालू रखें"
+        />
+
+        <p className="mt-4 text-sm font-semibold text-ink-700">
+          समय: <span className="text-saffron-700">{formatTime(state.profile.reminderTime)}</span>
+          <span className="ml-2 font-normal text-ink-500">
+            (हर दिन {formatNextReminder(state.profile.reminderTime)})
+          </span>
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {TIME_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => actions.updateProfile({ reminderTime: preset })}
+              className={cn(
+                "rounded-2xl border-2 px-4 py-2.5 text-sm font-bold transition-colors",
+                state.profile.reminderTime === preset
+                  ? "border-saffron-500 bg-saffron-500 text-white"
+                  : "border-saffron-200 bg-white text-ink-700",
+              )}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
+
+        <label className="mt-3 block text-sm font-semibold text-ink-500">
+          अपना समय चुनें
+          <input
+            type="time"
+            value={state.profile.reminderTime}
+            onChange={(event) =>
+              actions.updateProfile({ reminderTime: normalizeTime(event.target.value) })
+            }
+            className="mt-1.5 block w-full rounded-2xl border-2 border-saffron-200 bg-white px-4 py-3 text-base font-bold text-ink-900"
+          />
+        </label>
+
+        <div className="mt-4 rounded-3xl bg-cream-200/70 p-4">
+          <p className="text-[11px] font-bold tracking-[0.14em] text-ink-500 uppercase">
+            ऐसा संदेश आएगा
+          </p>
+          <p className="mt-1.5 text-base leading-relaxed font-bold text-ink-900">
+            {reminderText(state.profile.name)}
+          </p>
+          <Button variant="soft" size="md" block className="mt-3" onClick={sendTest}>
+            अभी संदेश भेजकर देखें
+          </Button>
+        </div>
+
+        <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          ब्राउज़र बंद होने पर यह संदेश नहीं आ पाता। सबसे भरोसेमंद तरीका: फ़ोन की अलार्म में भी{" "}
+          {formatTime(state.profile.reminderTime)} लगा लीजिए। Bajrang को "Add to Home Screen"
+          कर लेने पर यह अधिक बार आता है।
+        </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="पूजा की आवाज़" english="Chanting" />
+        <Toggle
+          checked={state.profile.chantingEnabled}
+          onChange={() => {
+            const next = !state.profile.chantingEnabled;
+            actions.updateProfile({ chantingEnabled: next });
+            if (next) playChime();
+          }}
+          label="पूजा के दौरान हल्का ॐ मंत्र"
+        />
+        <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          बहुत धीमी, बहुत हल्की आवाज़ — साँस जैसी। पूजा के दौरान 🔊 बटन से भी बंद/चालू कर सकते हैं।
+        </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="भाषा" english="Language" />
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => actions.updateProfile({ language: "hi" })}
+            className={cn(
+              "rounded-2xl border-2 px-4 py-3 text-sm font-bold",
+              state.profile.language === "hi"
+                ? "border-saffron-500 bg-saffron-500 text-white"
+                : "border-saffron-200 bg-white text-ink-700",
+            )}
+          >
+            हिंदी
+          </button>
+          <button
+            type="button"
+            onClick={() => actions.updateProfile({ language: "en" })}
+            className={cn(
+              "rounded-2xl border-2 px-4 py-3 text-sm font-bold",
+              state.profile.language === "en"
+                ? "border-saffron-500 bg-saffron-500 text-white"
+                : "border-saffron-200 bg-white text-ink-700",
+            )}
+          >
+            English
+          </button>
+        </div>
+        {state.profile.language === "en" ? (
+          <p className="mt-3 text-xs leading-relaxed text-ink-500">
+            English labels appear on buttons, but the bhakti content stays in Hindi.
+          </p>
+        ) : null}
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="आपकी साधना" english="Your data" />
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <Stat label="स्ट्रीक" value={state.streak} />
+          <Stat label="कुल" value={state.totalCompleted} />
+          <Stat label="सर्वश्रेष्ठ" value={state.bestStreak} />
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          सारी जानकारी सिर्फ़ आपके फ़ोन में सहेजी है — कोई अकाउंट नहीं, कोई सर्वर नहीं।
+        </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="ऐप के बारे में" english="About" />
+        <ul className="space-y-1.5 text-sm text-ink-700">
+          <li>जय बजरंगबली 🙏</li>
+          <li>रोज़ एक मिनट की पूजा, बस इतनी सी।</li>
+          <li>Bajrang · v0.1</li>
+        </ul>
+      </Card>
+
+      <div className="mt-5">
+        {confirmingReset ? (
+          <div className="space-y-3">
+            <p className="rounded-2xl bg-cream-300/70 px-4 py-3 text-sm leading-relaxed text-ink-700">
+              सारी जानकारी मिट जाएगी — नाम, संकल्प और स्ट्रीक। क्या आप नया शुरुआत करना चाहते हैं?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="deep"
+                size="lg"
+                block
+                onClick={() => {
+                  actions.resetAll();
+                  setConfirmingReset(false);
+                  onReset();
+                }}
+              >
+                हाँ, नया शुरुआत करें
+              </Button>
+              <Button variant="ghost" size="lg" onClick={() => setConfirmingReset(false)}>
+                नहीं
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmingReset(true)}
+            className="w-full rounded-3xl border border-saffron-200 bg-white/70 py-3.5 text-sm font-bold text-sindoor-600"
+          >
+            सब कुछ मिटाएँ · Reset
+          </button>
+        )}
+      </div>
+
+      {notice ? (
+        <p className="mt-4 rounded-2xl bg-cream-300/70 px-4 py-2.5 text-center text-xs leading-relaxed font-semibold text-ink-700">
+          {notice}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      className="pressable flex min-h-[56px] w-full items-center justify-between rounded-2xl bg-cream-200/70 px-4 py-3"
+    >
+      <span className="text-sm font-bold text-ink-900">{label}</span>
+      <span
+        className={cn(
+          "relative h-7 w-12 rounded-full transition-colors",
+          checked ? "bg-saffron-500" : "bg-ink-500/30",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all",
+            checked ? "left-6" : "left-1",
+          )}
+        />
+      </span>
+    </button>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl bg-cream-200/70 px-2 py-3">
+      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">{toHindiDigits(value)}</p>
+      <p className="mt-0.5 text-[11px] font-semibold text-ink-500">{label}</p>
+    </div>
+  );
+}
