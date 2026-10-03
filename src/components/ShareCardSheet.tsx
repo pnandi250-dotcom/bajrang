@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDerivedState } from "../lib/store";
 import { buildShareText, createShareCard, shareFileName } from "../lib/shareCard";
-import { toHindiDigits } from "../lib/date";
+import { toNativeDigits } from "../lib/date";
+import { useT } from "../lib/i18n";
 import { Button } from "./ui/Button";
 
 type Props = {
@@ -13,11 +14,12 @@ type Props = {
 
 export function ShareCardSheet({ open, onClose, periodDays }: Props) {
   const state = useDerivedState();
+  const t = useT();
   const [card, setCard] = useState<{ dataUrl: string; blob: Blob | null } | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const streak = periodDays ?? state.streak;
-  const periodLabel = `${toHindiDigits(streak)} दिन`;
+  const periodLabel = `${toNativeDigits(streak)} ${t("दिन")}`;
 
   useEffect(() => {
     if (!open) {
@@ -26,7 +28,7 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
       return;
     }
     const canvas = createShareCard({
-      name: state.profile.name || "भक्त",
+      name: state.profile.name || t("भक्त"),
       streak,
       totalCompleted: state.totalCompleted,
       sankalp: state.profile.sankalp,
@@ -34,7 +36,7 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
     });
     const dataUrl = canvas.toDataURL("image/png");
     canvas.toBlob((blob) => setCard({ dataUrl, blob }), "image/png", 0.95);
-  }, [open, state.profile.name, state.profile.sankalp, state.totalCompleted, streak, periodLabel]);
+  }, [open, t, state.profile.name, state.profile.sankalp, state.totalCompleted, streak, periodLabel]);
 
   if (!open) return null;
 
@@ -86,7 +88,7 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
   function shareToWhatsApp() {
     downloadImage();
     window.open(`https://wa.me/?text=${encodeURIComponent(buildText())}`, "_blank", "noopener");
-    setStatus("तस्वीर सहेजी जा रही है — फिर WhatsApp में चुन लीजिए।");
+    setStatus(t("तस्वीर सहेजी जा रही है — फिर WhatsApp में चुन लीजिए।"));
   }
 
   /** iOS Safari में download attribute काम नहीं करता — तस्वीर नए टैब में खोलें */
@@ -94,22 +96,22 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
     if (!dataUrl) return;
     const tab = window.open();
     if (!tab) {
-      setStatus("पॉपअप ब्लॉक है — तस्वीर सहेजें दबाएँ।");
+      setStatus(t("पॉपअप ब्लॉक है — तस्वीर सहेजें दबाएँ।"));
       return;
     }
     tab.document.write(
-      `<title>बजरंग कार्ड</title><img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto" />`,
+      `<title>${t("बजरंग कार्ड")}</title><img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto" />`,
     );
     tab.document.close();
-    setStatus("तस्वीर खुल गई — लंबे दबाएँ और 'Save Image' चुनें।");
+    setStatus(t("तस्वीर खुल गई — लंबे दबाएँ और 'Save Image' चुनें।"));
   }
 
   async function copyText() {
     try {
       await navigator.clipboard.writeText(buildText());
-      setStatus("बात कॉपी हो गई।");
+      setStatus(t("बात कॉपी हो गई।"));
     } catch {
-      setStatus("कॉपी नहीं हो सका।");
+      setStatus(t("कॉपी नहीं हो सका।"));
     }
   }
 
@@ -119,12 +121,12 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-saffron-200" />
 
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-ink-900">साप्ताहिक कार्ड</h2>
+          <h2 className="text-xl font-extrabold text-ink-900">{t("साप्ताहिक कार्ड")}</h2>
           <button
             type="button"
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-full bg-cream-300 text-ink-700"
-            aria-label="बंद करें"
+            aria-label={t("बंद करें")}
           >
             ✕
           </button>
@@ -132,36 +134,36 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
 
         <div className="mt-3 overflow-hidden rounded-3xl border border-saffron-200 bg-white shadow-soft">
           {dataUrl ? (
-            <img src={dataUrl} alt="बजरंग साप्ताहिक कार्ड" className="w-full" />
+            <img src={dataUrl} alt={t("बजरंग साप्ताहिक कार्ड")} className="w-full" />
           ) : (
             <div className="grid aspect-square place-items-center text-saffron-400">
-              तैयार हो रहा है…
+              {t("तैयार हो रहा है…")}
             </div>
           )}
         </div>
 
         <div className="mt-4 space-y-2.5">
           <Button variant="primary" size="lg" block onClick={shareNative}>
-            <span>साझा करें</span>
+            <span>{t("साझा करें")}</span>
             <span className="text-sm font-normal">Share</span>
           </Button>
 
           <Button variant="deep" size="lg" block onClick={shareToWhatsApp}>
-            <span>WhatsApp पर भेजें</span>
+            <span>{t("WhatsApp पर भेजें")}</span>
             <span className="text-sm font-normal">WhatsApp</span>
           </Button>
 
           <div className="flex gap-2.5">
             <Button variant="soft" size="md" block onClick={downloadImage}>
-              तस्वीर सहेजें
+              {t("तस्वीर सहेजें")}
             </Button>
             <Button variant="soft" size="md" block onClick={openImage}>
-              तस्वीर खोलें
+              {t("तस्वीर खोलें")}
             </Button>
           </div>
 
           <p className="rounded-2xl bg-cream-200/80 px-4 py-2.5 text-center text-[11px] font-semibold text-ink-500">
-            PNG तस्वीर · 1080 × 1080 · कोई ऐप नहीं, सीधे WhatsApp
+            {t("PNG तस्वीर · 1080 × 1080 · कोई ऐप नहीं, सीधे WhatsApp")}
           </p>
 
           <button
@@ -169,7 +171,7 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
             onClick={copyText}
             className="w-full text-center text-sm font-semibold text-ink-500"
           >
-            सिर्फ़ बात कॉपी करें
+            {t("सिर्फ़ बात कॉपी करें")}
           </button>
 
           {status ? (

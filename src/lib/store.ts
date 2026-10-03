@@ -15,7 +15,7 @@ function devotionalYesterday(): string {
   return toDateKey(addDays(calendarDateForDevotionalDay(), -1));
 }
 
-export type Language = "hi" | "en";
+export type { Lang as Language } from "./i18n";
 
 export type Profile = {
   name: string;
@@ -24,7 +24,6 @@ export type Profile = {
   reminderEnabled: boolean;
   /** पूजा के दौरान हल्का "ॐ" मंत्र सुनना */
   chantingEnabled: boolean;
-  language: Language;
   onboarded: boolean;
   createdAt: string;
 };
@@ -76,7 +75,6 @@ const DEFAULT_STATE: AppState = {
     reminderTime: "06:00",
     reminderEnabled: false,
     chantingEnabled: true,
-    language: "hi",
     onboarded: false,
     createdAt: toDateKey(new Date()),
   },
@@ -103,7 +101,6 @@ function sanitize(raw: unknown): AppState {
   profile.reminderTime = /^\d{2}:\d{2}$/.test(profile.reminderTime)
     ? profile.reminderTime
     : "06:00";
-  profile.language = profile.language === "en" ? "en" : "hi";
   profile.chantingEnabled = profile.chantingEnabled !== false;
 
   const completedDates = Array.isArray(input.completedDates)

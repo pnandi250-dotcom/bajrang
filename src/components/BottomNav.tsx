@@ -1,17 +1,19 @@
 import { cn } from "../lib/utils";
+import { useT } from "../lib/i18n";
 import { haptic } from "../lib/device";
 
 export type Tab = "home" | "katha" | "calendar" | "sankalp" | "settings";
 
-const TABS: { id: Tab; icon: string; label: string; english: string }[] = [
-  { id: "home", icon: "🙏", label: "आज", english: "Home" },
-  { id: "katha", icon: "📖", label: "कथा", english: "Katha" },
-  { id: "calendar", icon: "📅", label: "पंचांग", english: "Calendar" },
-  { id: "sankalp", icon: "🪔", label: "संकल्प", english: "Sankalp" },
-  { id: "settings", icon: "⚙️", label: "सेटिंग", english: "Settings" },
+const TABS: { id: Tab; icon: string; hindi: string; english: string }[] = [
+  { id: "home", icon: "🙏", hindi: "आज", english: "Home" },
+  { id: "katha", icon: "📖", hindi: "कथा", english: "Katha" },
+  { id: "calendar", icon: "📅", hindi: "पंचांग", english: "Calendar" },
+  { id: "sankalp", icon: "🪔", hindi: "संकल्प", english: "Sankalp" },
+  { id: "settings", icon: "⚙️", hindi: "सेटिंग", english: "Settings" },
 ];
 
 export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
+  const t = useT();
   return (
     <nav className="safe-bottom sticky bottom-0 z-30 border-t border-saffron-100 bg-cream-100/95 backdrop-blur-md">
       <ul className="mx-auto flex max-w-[480px] items-stretch justify-around px-2 py-1.5">
@@ -26,7 +28,7 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
                   onChange(item.id);
                 }}
                 aria-current={active ? "page" : undefined}
-                aria-label={`${item.label} (${item.english})`}
+                aria-label={`${t(item.hindi)} (${item.english})`}
                 className={cn(
                   "flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition-colors",
                   "min-h-[58px] justify-center",
@@ -47,7 +49,7 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
                     active ? "text-saffron-700" : "text-ink-500",
                   )}
                 >
-                  {item.label}
+                  {t(item.hindi)}
                 </span>
                 <span
                   className={cn(

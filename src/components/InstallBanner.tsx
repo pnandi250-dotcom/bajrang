@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useT } from "../lib/i18n";
 import { Button } from "./ui/Button";
 
 type BeforeInstallPromptEvent = Event & {
@@ -14,6 +15,7 @@ const DISMISS_KEY = "bajrang.installBanner";
  * वहाँ iOS का हुक instruction ज़्यादा काम आता है।
  */
 export function InstallBanner({ isIOS }: { isIOS: boolean }) {
+  const t = useT();
   const [event, setEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(() => {
     try {
@@ -66,11 +68,11 @@ export function InstallBanner({ isIOS }: { isIOS: boolean }) {
           📲
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-ink-900">Bajrang को फ़ोन में लगाएँ</p>
+          <p className="text-sm font-bold text-ink-900">{t("Bajrang को फ़ोन में लगाएँ")}</p>
           <p className="mt-0.5 text-xs leading-[1.7] text-ink-500">
             {isIOS
-              ? "Safari → साझा करें → 'Add to Home Screen'"
-              : "एक टैप में खुलेगा, और रोज़ का संदेश भी आएगा।"}
+              ? t("Safari → साझा करें → 'Add to Home Screen'")
+              : t("एक टैप में खुलेगा, और रोज़ का संदेश भी आएगा।")}
           </p>
         </div>
         {event ? (
@@ -85,7 +87,7 @@ export function InstallBanner({ isIOS }: { isIOS: boolean }) {
               close();
             }}
           >
-            लगाएँ
+            {t("लगाएँ")}
           </Button>
         ) : (
           <button
@@ -93,7 +95,7 @@ export function InstallBanner({ isIOS }: { isIOS: boolean }) {
             onClick={close}
             className="shrink-0 rounded-2xl px-3 py-2 text-sm font-bold text-saffron-700"
           >
-            ठीक है
+            {t("ठीक है")}
           </button>
         )}
       </div>

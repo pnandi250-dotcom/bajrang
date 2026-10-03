@@ -3,15 +3,16 @@ import { hopeOfDay, verseOfDay } from "../lib/content";
 import { KATHA_TOTAL, plan } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
-  HINDI_WEEKDAYS,
   addDays,
   calendarDateForDevotionalDay,
-  formatHindiDate,
-  formatFullHindiDate,
+  formatDate,
+  formatFullDate,
   hanumanDayName,
   toDateKey,
-  toHindiDigits,
+  toNativeDigits,
+  weekdayNames,
 } from "../lib/date";
+import { fmt, t as translate, useLang, useT, type Lang } from "../lib/i18n";
 import { Button } from "../components/ui/Button";
 import { Card, Eyebrow } from "../components/ui/Card";
 import { WeekStrip } from "../components/WeekStrip";
@@ -30,32 +31,34 @@ export function Home({
   onOpenKatha: () => void;
 }) {
   const state = useDerivedState();
-  // "आज" का मतलब पूजा का दिन — रात 3 बजे के बाद का दिन
+  const t = useT();
+  // "आज" का मतलब पूजा का दिन — रात 3 बजे के बाद यह कल हो जाता है
   const today = useMemo(() => calendarDateForDevotionalDay(), []);
-  const verse = useMemo(() => verseOfDay(today), [today]);
-  const hope = useMemo(() => hopeOfDay(today), [today]);
+  const lang = useLang();
+  const verse = useMemo(() => verseOfDay(today, lang), [today, lang]);
+  const hope = useMemo(() => hopeOfDay(today, lang), [today, lang]);
   const specialDay = hanumanDayName(today);
   const firstName = state.profile.name.trim().split(" ")[0] ?? "";
   const partOfDay = timeOfDay(today);
   // नए उपयोगकर्ता को "० दिन" न दिखाएँ — यह उम्मीद का ऐप है
   const isNewHere = state.streak === 0 && state.totalCompleted === 0;
   // कथा का हुक — कल क्या खुलेगा, यह आज से ही बताओ
-  const kathaHook = useMemo(() => kathaTeaser(state.kathaRevealed, state.kathaRead), [
-    state.kathaRevealed,
-    state.kathaRead,
-  ]);
+  const kathaHook = useMemo(
+    () => kathaTeaser(state.kathaRevealed, state.kathaRead, lang),
+    [state.kathaRevealed, state.kathaRead, lang],
+  );
 
   return (
     <div className="safe-top stagger px-5 pt-3 pb-6">
       {/* ऊपर: स्ट्रीक + संस्करण */}
       <header className="flex items-center justify-between">
-        <div className="pressable flex items-center gap-2 rounded-full border border-saffron-200 bg-white/85 py-1.5 pr-4 pl-1.5 shadow-[0_6px_18px_-14px_rgba(120,44,25,0.6)]">
+        <div className="pressable flex items-center gap-2 rounded-full border border-saffron-200 bg-white/85 py-1.5 pr-4 pl-1.5 shadow-[0_6px_18_-14px_rgba(120,44,25,0.6)]">
           {isNewHere ? (
             <>
               <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-saffron-100 to-saffron-200 text-base">
                 🪔
               </span>
-              <span className="text-sm font-bold text-ink-700">नया शुरुआत</span>
+              <span className="text-sm font-bold text-ink-700">{t("नया शुरुआत")}</span>
             </>
           ) : state.isPaused ? (
             <>
@@ -63,9 +66,9 @@ export function Home({
                 🛌
               </span>
               <span className="text-lg font-extrabold text-ink-900 tabular-nums">
-                {toHindiDigits(state.streak)}
+                {toNativeDigits(state.streak)}
               </span>
-              <span className="text-sm font-semibold text-ink-500">विश्राम</span>
+              <span className="text-sm font-semibold text-ink-500">{t("विश्राम")}</span>
             </>
           ) : (
             <>
@@ -73,9 +76,9 @@ export function Home({
                 <span className="animate-flame">🔥</span>
               </span>
               <span className="text-lg font-extrabold text-ink-900 tabular-nums">
-                {toHindiDigits(state.streak)}
+                {toNativeDigits(state.streak)}
               </span>
-              <span className="text-sm font-semibold text-ink-500">दिन</span>
+              <span className="text-sm font-semibold text-ink-500">{t("दिन")}</span>
             </>
           )}
         </div>
@@ -92,12 +95,13 @@ export function Home({
       <div className="mt-6">
         <p className="text-sm font-semibold text-saffron-700">{partOfDay}</p>
         <h1 className="mt-1 text-[28px] leading-snug font-extrabold text-ink-900">
-          जय श्री राम{firstName ? `, ${firstName}` : ""} 🙏
+          {t("जय श्री राम")}
+          {firstName ? `, ${firstName}` : ""} 🙏
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-ink-500">
           {state.doneToday
-            ? "आज की पूजा पूरी हो चुकी है। शाम को फिर मिलेंगे।"
-            : "आज का एक मिनट, हनुमान जी के साथ।"}
+            ? t("आज की पूजा पूरी हो चुकी है। शाम को फिर मिलेंगे।")
+            : t("आज का एक मिनट, हनुमान जी के साथ।")}
         </p>
       </div>
 
@@ -106,25 +110,22 @@ export function Home({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[13px] font-semibold text-ink-500">
-              {formatHindiDate(today)} · <span className="text-ink-700">{HINDI_WEEKDAYS[today.getDay()]}</span>
+              {formatDate(today)} ·{" "}
+              <span className="text-ink-700">{weekdayNames()[today.getDay()]}</span>
             </p>
-            <p className="mt-0.5 text-lg font-bold text-ink-900">
-              {formatFullHindiDate(today)}
-            </p>
+            <p className="mt-0.5 text-lg font-bold text-ink-900">{formatFullDate(today)}</p>
           </div>
           {specialDay ? (
-            <span className="animate-floaty shrink-0 rounded-2xl bg-linear-to-b from-saffron-100 to-saffron-200 px-3 py-2 text-center shadow-[0_6px_16px_-12px_rgba(120,44,25,0.8)]">
+            <span className="animate-floaty shrink-0 rounded-2xl bg-linear-to-b from-saffron-100 to-saffron-200 px-3 py-2 text-center shadow-[0_6px_16_-12px_rgba(120,44,25,0.8)]">
               <span className="block text-xl leading-none">🚩</span>
-              <span className="mt-1 block text-[11px] font-bold text-saffron-700">
-                {specialDay}
-              </span>
+              <span className="mt-1 block text-[11px] font-bold text-saffron-700">{specialDay}</span>
             </span>
           ) : null}
         </div>
 
         {specialDay ? (
           <p className="mt-4 rounded-2xl bg-saffron-50 px-4 py-3 text-sm leading-[1.8] font-medium text-saffron-800">
-            आज {specialDay} है — हनुमान जी के दिन। आज का पूजा और सोहना है।
+            {t("आज")} {specialDay} {t("है — हनुमान जी के दिन। आज का पूजा और सोहना है।")}
           </p>
         ) : null}
 
@@ -139,31 +140,20 @@ export function Home({
         {state.doneToday ? (
           <>
             <div className="rounded-[28px] border border-gold-300 bg-linear-to-b from-gold-200 to-cream-200 px-6 py-5 text-center shadow-glow">
-              <p className="text-2xl font-extrabold text-ink-900">आज की पूजा पूरी 🙏</p>
+              <p className="text-2xl font-extrabold text-ink-900">{t("आज की पूजा पूरी 🙏")}</p>
               <p className="mt-2 text-sm leading-relaxed font-medium text-ink-700">
-                कल फिर मिलेंगे। हनुमान जी आपका रक्षक हैं।
+                {t("कल फिर मिलेंगे। हनुमान जी आपका रक्षक हैं।")}
               </p>
             </div>
-            <Button
-              variant="soft"
-              size="lg"
-              block
-              className="mt-3"
-              onClick={onOpenShare}
-            >
-              🖼️ साप्ताहिक कार्ड साझा करें
+            <Button variant="soft" size="lg" block className="mt-3" onClick={onOpenShare}>
+              🖼️ {t("साप्ताहिक कार्ड साझा करें")}
             </Button>
           </>
         ) : (
           <>
-            <Button
-              variant="primary"
-              size="xl"
-              block
-              onClick={onStartRitual}
-            >
+            <Button variant="primary" size="xl" block onClick={onStartRitual}>
               <span className="text-2xl">🙏</span>
-              आज की पूजा शुरू करें
+              {t("आज की पूजा शुरू करें")}
             </Button>
             {state.streak > 0 ? (
               <button
@@ -171,7 +161,7 @@ export function Home({
                 onClick={onOpenShare}
                 className="pressable mt-3 w-full rounded-2xl py-2.5 text-sm font-bold text-saffron-700"
               >
-                🖼️ साप्ताहिक कार्ड बनाएँ
+                🖼️ {t("साप्ताहिक कार्ड बनाएँ")}
               </button>
             ) : null}
           </>
@@ -181,13 +171,14 @@ export function Home({
       {/* रविवार है तो कार्ड साझा करने की नम्र निवेदन */}
       {today.getDay() === 0 && state.streak > 0 ? (
         <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/80 to-white">
-          <Eyebrow tone="gold">आज रविवार है · Sunday</Eyebrow>
+          <Eyebrow tone="gold">{t("आज रविवार है · Sunday")}</Eyebrow>
           <p className="mt-2 text-[17px] leading-[1.85] font-bold text-ink-900">
-            आपके {toHindiDigits(state.streak)} दिन की साधना को साझा करें — एक तस्वीर, कुछ
-            लोगों के लिए प्रेरणा बन जाएगी।
+            {fmt("आपके {n} दिन की साधना को साझा करें — एक तस्वीर, कुछ लोगों के लिए प्रेरणा बन जाएगी।", {
+              n: toNativeDigits(state.streak),
+            })}
           </p>
           <Button variant="deep" size="lg" block className="mt-4" onClick={onOpenShare}>
-            साप्ताहिक कार्ड बनाएँ
+            {t("साप्ताहिक कार्ड बनाएँ")}
           </Button>
         </Card>
       ) : null}
@@ -197,17 +188,20 @@ export function Home({
         <Card className="mt-5 border-saffron-200 bg-linear-to-b from-cream-200 to-white">
           <div className="flex items-center gap-2">
             <span className="text-xl">🛌</span>
-            <p className="text-lg font-extrabold text-ink-900">विश्राम जारी है</p>
+            <p className="text-lg font-extrabold text-ink-900">{t("विश्राम जारी है")}</p>
           </div>
           <p className="mt-2 text-sm leading-[1.85] text-ink-700">
             {state.pauseDaysLeft > 0 ? (
               <>
-                <b>{toHindiDigits(state.pauseDaysLeft)} दिन</b> और आराम। आपकी{" "}
-                {toHindiDigits(state.streak)} दिन की साधना जहाँ थी वहीं सुरक्षित है — रुके
-                हुए दिन छूटे नहीं गिने जाएँगे। जब मन करे, पूजा कीजिए।
+                <b>
+                  {toNativeDigits(state.pauseDaysLeft)} {t("दिन")}
+                </b>{" "}
+                {fmt("और आराम। आपकी {n} दिन की साधना जहाँ थी वहीं सुरक्षित है — रुके हुए दिन छूटे नहीं गिने जाएँगे। जब मन करे, पूजा कीजिए।", {
+                  n: toNativeDigits(state.streak),
+                })}
               </>
             ) : (
-              <>आज विश्राम का अंतिम दिन है। कल फिर सिलसिला यहीं से आगे बढ़ेगा।</>
+              t("आज विश्राम का अंतिम दिन है। कल फिर सिलसिला यहीं से आगे बढ़ेगा।")
             )}
           </p>
           <Button
@@ -217,7 +211,7 @@ export function Home({
             className="mt-4"
             onClick={() => actions.resumeFromPause()}
           >
-            आज से फिर शुरू करें
+            {t("आज से फिर शुरू करें")}
           </Button>
         </Card>
       ) : null}
@@ -228,35 +222,38 @@ export function Home({
           <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/70 to-white">
             <div className="flex items-center gap-2">
               <span className="text-xl">🕊️</span>
-              <p className="text-lg font-extrabold text-ink-900">क्षमा बचा लेगी</p>
+              <p className="text-lg font-extrabold text-ink-900">{t("क्षमा बचा लेगी")}</p>
             </div>
             <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-              {toHindiDigits(state.missedDays)} दिन छूट गए हैं, पर आपके पास{" "}
-              <b>{toHindiDigits(state.graceDays)} क्षमा दिन</b> हैं। आज पूजा कीजिए — सिलसिला
-              टूटेगा नहीं। कोई डाँट नहीं, बस ध्यान रखिए।
+              {fmt("{m} दिन छूट गए हैं, पर आपके पास", { m: toNativeDigits(state.missedDays) })}{" "}
+              <b>
+                {toNativeDigits(state.graceDays)} {t("क्षमा दिन")}
+              </b>{" "}
+              {t("हैं। आज पूजा कीजिए — सिलसिला टूटेगा नहीं। कोई डाँट नहीं, बस ध्यान रखिए।")}
             </p>
           </Card>
         ) : (
           <Card className="mt-5 border-gold-300/70 bg-gold-200/35">
-            <p className="text-lg font-bold text-ink-900">चिंता मत करो, फिर से शुरू करो 🙏</p>
+            <p className="text-lg font-bold text-ink-900">{t("चिंता मत करो, फिर से शुरू करो 🙏")}</p>
             <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-              {toHindiDays(state.missedDays)} — कोई बात नहीं। हनुमान जी आज भी आपके साथ हैं।
-              एक मिनट से ही सब शुरू हो जाता है।
+              {t("दिन बीत गए")}{" "}
+              {fmt("({n} — कोई बात नहीं। हनुमान जी आज भी आपके साथ हैं। एक मिनट से ही सब शुरू हो जाता है।", {
+                n: toNativeDigits(state.missedDays),
+              })}
             </p>
           </Card>
         )
       ) : null}
 
       {/* कथा — कल का इंतज़ार बनाने वाली सबसे बड़ी बात */}
-      <button
-        type="button"
-        onClick={onOpenKatha}
-        className="mt-4 block w-full text-left"
-      >
+      <button type="button" onClick={onOpenKatha} className="mt-4 block w-full text-left">
         <Card className="border-saffron-200 bg-linear-to-b from-cream-200 to-white">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <Eyebrow>बजरंग कथा · {state.kathaRevealed > 0 ? state.kathaRevealed : 0} / {KATHA_TOTAL}</Eyebrow>
+              <Eyebrow>
+                {t("बजरंग कथा")} · {toNativeDigits(state.kathaRevealed)} /{" "}
+                {toNativeDigits(KATHA_TOTAL)}
+              </Eyebrow>
               <p className="mt-1 text-[17px] leading-snug font-extrabold text-ink-900">
                 {kathaHook.title}
               </p>
@@ -266,15 +263,15 @@ export function Home({
             </span>
           </div>
           <p className="mt-3 text-sm leading-[1.85] text-ink-700">{kathaHook.note}</p>
-          <p className="mt-3 text-xs font-bold text-saffron-700">
-            {kathaHook.cta} →
-          </p>
+          <p className="mt-3 text-xs font-bold text-saffron-700">{kathaHook.cta} →</p>
         </Card>
       </button>
 
       {/* आज का श्लोक */}
       <Card className="mt-5">
-        <Eyebrow>आज का श्लोक · {verse.source}</Eyebrow>
+        <Eyebrow>
+          {t("आज का श्लोक")} · {verse.source}
+        </Eyebrow>
         <p className="mt-3 text-[17px] leading-[1.9] font-bold text-ink-900">
           {verse.lines.map((line) => (
             <span key={line} className="block">
@@ -287,7 +284,7 @@ export function Home({
 
       {/* उम्मीद का संदेश + संकल्प */}
       <Card className="mt-4 bg-linear-to-b from-saffron-50 to-white">
-        <Eyebrow>आज का संदेश · Daily Hope</Eyebrow>
+        <Eyebrow>{t("आज का संदेश")} · Daily Hope</Eyebrow>
         <p className="mt-2 text-[17px] leading-[1.85] font-bold text-ink-900">“{hope}”</p>
         {state.profile.sankalp ? (
           <button
@@ -297,7 +294,7 @@ export function Home({
           >
             <span>
               <span className="block text-[11px] font-bold tracking-[0.14em] text-ink-500 uppercase">
-                आपका संकल्प
+                {t("आपका संकल्प")}
               </span>
               <span className="mt-1 block text-base font-bold text-ink-900">
                 {state.profile.sankalp}
@@ -310,16 +307,16 @@ export function Home({
 
       {/* हफ़्ते का सारांश */}
       <Card className="mt-4">
-        <Eyebrow>साप्ताहिक सारांश · Weekly</Eyebrow>
+        <Eyebrow>{t("साप्ताहिक सारांश")} · Weekly</Eyebrow>
         <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-          <Stat label="इस हफ़्ते" value={weekCount(state.completedDates)} />
-          <Stat label="कुल पूजा" value={state.totalCompleted} />
-          <Stat label="सर्वश्रेष्ठ" value={state.bestStreak} />
+          <Stat label={t("इस हफ़्ते")} value={weekCount(state.completedDates)} />
+          <Stat label={t("कुल पूजा")} value={state.totalCompleted} />
+          <Stat label={t("सर्वश्रेष्ठ")} value={state.bestStreak} />
         </div>
 
         <div className="mt-4 flex items-center justify-between rounded-2xl bg-cream-200/70 px-4 py-3">
           <span className="flex items-center gap-2 text-sm font-semibold text-ink-700">
-            <span className="text-base">🕊️</span> क्षमा दिन बाकी
+            <span className="text-base">🕊️</span> {t("क्षमा दिन बाकी")}
           </span>
           <span className="flex gap-1.5">
             {Array.from({ length: GRACE_MAX }, (_, index) => (
@@ -337,8 +334,10 @@ export function Home({
           </span>
         </div>
         <p className="mt-2 text-[11px] leading-[1.7] text-ink-500">
-          हर {toHindiDigits(GRACE_EVERY_DAYS)} दिन की साधना पर एक क्षमा दिन मिलता है (ज़्यादा से
-          ज़्यादा {toHindiDigits(GRACE_MAX)})। दिन छूट जाए तो अपने आप लग जाती है।
+          {fmt("हर {n} दिन की साधना पर एक क्षमा दिन मिलता है (ज़्यादा से ज़्यादा {m})। दिन छूट जाए तो अपने आप लग जाती है।", {
+            n: toNativeDigits(GRACE_EVERY_DAYS),
+            m: toNativeDigits(GRACE_MAX),
+          })}
         </p>
       </Card>
 
@@ -346,63 +345,62 @@ export function Home({
       <ReminderNudge onOpenSettings={onOpenSettings} />
 
       <p className="mt-6 text-center text-xs leading-relaxed text-ink-500">
-        जय बजरंगबली 🙏 — प्रेम और अनुशासन, रोज़ एक मिनट
+        {t("जय बजरंगबली 🙏 — प्रेम और अनुशासन, रोज़ एक मिनट")}
       </p>
     </div>
   );
-}
-
-/** "3 दिन बीत गए" जैसा वाक्य */
-function toHindiDays(count: number): string {
-  return `${toHindiDigits(count)} दिन बीत गए`;
 }
 
 /**
  * कथा का इशारा — यही वह कारण है जो भक्त को कल फिर लाता है।
  * पहली पूजा से पहले भी उत्सुकता बननी चाहिए, पूजा के बाद भी अगला प्रसंग दिखना चाहिए।
  */
-function kathaTeaser(revealed: number, read: number) {
-  const entries = plan();
+function kathaTeaser(revealed: number, read: number, lang: Lang) {
+  const entries = plan(lang);
   const latest = revealed > 0 ? entries[revealed - 1] : null;
   const next = entries[revealed] ?? null;
 
   if (!latest) {
     return {
-      title: "आज की पूजा के बाद खुलेगा पहला प्रसंग",
-      note: "रोज़ एक प्रसंग, पूजा के बाद — ताकि कथा आगे बढ़ती रहे और आप कल फिर आएँ।",
-      cta: "कथा देखें",
+      title: translate("आज की पूजा के बाद खुलेगा पहला प्रसंग"),
+      note: translate(
+        "रोज़ एक प्रसंग, पूजा के बाद — ताकि कथा आगे बढ़ती रहे और आप कल फिर आएँ।",
+      ),
+      cta: translate("कथा देखें"),
     };
   }
   if (!next) {
     return {
-      title: "सौ आठ प्रसंग पूरे",
-      note: "आप पूरी कथा सुन चुके हैं। हनुमान जी का साथ सदा के लिए बना रहे।",
-      cta: "कथा दोबारा पढ़ें",
+      title: translate("सौ आठ प्रसंग पूरे"),
+      note: translate("आप पूरी कथा सुन चुके हैं। हनुमान जी का साथ सदा के लिए बना रहे।"),
+      cta: translate("कथा दोबारा पढ़ें"),
     };
   }
+  const label = read >= revealed ? "पिछला प्रसंग: " : "नया खुला प्रसंग: ";
   return {
-    title:
-      read >= revealed
-        ? `पिछला प्रसंग: ${latest.title}`
-        : `नया खुला प्रसंग: ${latest.title}`,
-    note: `कल पूजा के बाद खुलेगा — प्रसंग ${toHindiDigits(next.n)}: ${next.title}।`,
-    cta: "कथा पढ़ें",
+    title: `${translate(label)}${latest.title}`,
+    note: fmt("कल पूजा के बाद खुलेगा — प्रसंग {n}: {title}।", {
+      n: toNativeDigits(next.n),
+      title: next.title,
+    }),
+    cta: translate("कथा पढ़ें"),
   };
 }
 
 /** समय के हिसाब से नमस्कार — सुबह अलग, शाम अलग */
 function timeOfDay(date: Date): string {
   const hour = date.getHours();
-  if (hour < 4) return "शुभ रात्रि 🙏";
-  if (hour < 11) return "शुभ प्रभात 🙏";
-  if (hour < 16) return "नमस्कार 🙏";
-  if (hour < 20) return "शुभ संध्या 🙏";
-  return "शुभ रात्रि 🙏";
+  if (hour < 4) return translate("शुभ रात्रि 🙏");
+  if (hour < 11) return translate("शुभ प्रभात 🙏");
+  if (hour < 16) return translate("नमस्कार 🙏");
+  if (hour < 20) return translate("शुभ संध्या 🙏");
+  return translate("शुभ रात्रि 🙏");
 }
 
 /** रोज़ का संदेश चालू करने की नम्र याद दिलाना — साल में एक बार ही दिखेगा */
 function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
   const state = useDerivedState();
+  const t = useT();
   const dismissed = useMemo(() => {
     try {
       return window.localStorage.getItem("bajrang.reminderNudge") === "done";
@@ -411,7 +409,11 @@ function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
     }
   }, []);
 
-  const show = state.profile.onboarded && state.streak >= 3 && !state.profile.reminderEnabled && !dismissed;
+  const show =
+    state.profile.onboarded &&
+    state.streak >= 3 &&
+    !state.profile.reminderEnabled &&
+    !dismissed;
   if (!show) return null;
 
   return (
@@ -421,13 +423,15 @@ function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
           ⏰
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-base font-bold text-ink-900">रोज़ सुबह का संदेश चालू करें?</p>
+          <p className="text-base font-bold text-ink-900">
+            {t("रोज़ सुबह का संदेश चालू करें?")}
+          </p>
           <p className="mt-1 text-sm leading-[1.8] text-ink-500">
-            आपके चुने हुए समय पर हनुमान जी का वार याद दिला देंगे — हर दिन सिर्फ़ एक बार।
+            {t("आपके चुने हुए समय पर हनुमान जी का वार याद दिला देंगे — हर दिन सिर्फ़ एक बार।")}
           </p>
           <div className="mt-3 flex gap-2">
             <Button variant="primary" size="md" onClick={onOpenSettings}>
-              सेटिंग में जाएँ
+              {t("सेटिंग में जाएँ")}
             </Button>
             <Button
               variant="ghost"
@@ -440,7 +444,7 @@ function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
                 }
               }}
             >
-              बाद में
+              {t("बाद में")}
             </Button>
           </div>
         </div>
@@ -452,9 +456,7 @@ function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl bg-cream-200/70 px-2 py-3">
-      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">
-        {toHindiDigits(value)}
-      </p>
+      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">{toNativeDigits(value)}</p>
       <p className="mt-0.5 text-[11px] font-semibold text-ink-500">{label}</p>
     </div>
   );

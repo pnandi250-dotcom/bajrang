@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Capacitor } from "@capacitor/core";
+import { getLang } from "./lib/i18n";
 import App from "./App";
 import "./index.css";
 
@@ -10,6 +11,8 @@ async function bootstrap() {
     const { registerSW } = await import("virtual:pwa-register");
     registerSW({ immediate: true });
   }
+
+  document.documentElement.lang = getLang() === "bn" ? "bn" : "hi";
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

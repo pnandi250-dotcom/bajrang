@@ -1,3 +1,6 @@
+import { EPISODE_BN } from "./kathaBn";
+import { getLang, type Lang } from "./i18n";
+
 /*
  * बजरंग कथा — 108 प्रसंग, एक-एक करके
  * ────────────────────────────────────────────────
@@ -544,20 +547,44 @@ export function writtenEpisode(n: number): KathaEpisode | null {
 }
 
 let planCache: PlanEntry[] | null = null;
+let planCacheLang: Lang | null = null;
 
-/** 108 प्रसंगों की सूची — लिखे गए और आने वाले, दोनों साथ */
-export function plan(): PlanEntry[] {
-  if (planCache) return planCache;
+/** 108 प्रसंगों की सूची — लिखे गए और आने वाले, दोनों साथ। भाषा के हिसाब से। */
+export function plan(lang: Lang = getLang()): PlanEntry[] {
+  if (planCache && planCacheLang === lang) return planCache;
+  planCacheLang = lang;
   planCache = PARTS.flatMap((part) => {
     const titles =
       FORTHCOMING_TITLES[part.id] ??
       EPISODES.filter((item) => item.part === part.name).map((item) => item.title);
-    return titles.map((title, index) => {
+    return titles.map((rawTitle, index) => {
       const n = part.from + index;
-      return { n, part, title, episode: writtenEpisode(n) };
+      const written = writtenEpisode(n);
+      const episode = localize(written, lang);
+      return {
+        n,
+        part,
+        title: episode?.title ?? rawTitle,
+        episode,
+      };
     });
   });
   return planCache;
+}
+
+/** प्रसंग का हिंदी लेखन — भाषा चाहे जो भी हो */
+function localize(episode: KathaEpisode | null, lang: Lang): KathaEpisode | null {
+  if (!episode) return null;
+  if (lang === "hi") return episode;
+  const bn = EPISODE_BN[episode.n];
+  if (!bn) return episode;
+  return {
+    ...episode,
+    title: bn.title,
+    story: bn.story,
+    lesson: bn.lesson,
+    note: bn.note ?? episode.note,
+  };
 }
 
 /** पूजा के बाद खुला नया प्रसंग (null = सब खुल चुके) */

@@ -3,10 +3,10 @@ import { actions, useDerivedState, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/st
 import {
   DAY_BOUNDARY_HOUR,
   calendarDateForDevotionalDay,
-  formatFullHindiDate,
+  formatFullDate,
   formatTime,
   normalizeTime,
-  toHindiDigits,
+  toNativeDigits,
 } from "../lib/date";
 import {
   exactAlarmState,
@@ -23,12 +23,15 @@ import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { playChime } from "../lib/audio";
+import { fmt, LANGS, setLang, useLang, useT } from "../lib/i18n";
 import { cn } from "../lib/utils";
 
 const TIME_PRESETS = ["05:30", "06:00", "06:30", "07:00", "07:30", "08:00"];
 
 export function Settings({ onReset }: { onReset: () => void }) {
   const state = useDerivedState();
+  const t = useT();
+  const lang = useLang();
   const [name, setName] = useState(state.profile.name);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -56,44 +59,47 @@ export function Settings({ onReset }: { onReset: () => void }) {
           doneToday: state.doneToday,
         });
         setNativeScheduled(ok);
-        setNotice(ok ? "हर दिन सुबह लग गया — ऐप बंद होने पर भी आएगा।" : "इजाज़त मिली, पर समय नहीं लग सका।");
+        setNotice(
+          ok
+            ? t("हर दिन सुबह लग गया — ऐप बंद होने पर भी आएगा।")
+            : t("इजाज़त मिली, पर समय नहीं लग सका।"),
+        );
         return;
       }
       setNotice(
         granted
-          ? "चालू — रोज़ सुबह संदेश आएगा।"
+          ? t("चालू — रोज़ सुबह संदेश आएगा।")
           : caps.secure
-            ? "ब्राउज़र ने इजाज़त नहीं दी। फ़ोन की अलार्म में समय लगा लीजिए।"
-            : "https पर यह काम करता है। फ़ोन की अलार्म में समय लगा लीजिए।",
+            ? t("ब्राउज़र ने इजाज़त नहीं दी। फ़ोन की अलार्म में समय लगा लीजिए।")
+            : t("https पर यह काम करता है। फ़ोन की अलार्म में समय लगा लीजिए।"),
       );
       return;
     }
     actions.updateProfile({ reminderEnabled: false });
     setNativeScheduled(false);
-    setNotice("बंद कर दिया।");
+    setNotice(t("बंद कर दिया।"));
   }
 
   async function sendTest() {
     const sent = await sendTestReminder(state.profile.name);
-    setNotice(sent ? "संदेश भेज दिया — देखिए।" : "संदेश नहीं जा सका।");
+    setNotice(sent ? t("संदेश भेज दिया — देखिए।") : t("संदेश नहीं जा सका।"));
   }
 
   return (
     <div className="safe-top px-5 pt-3 pb-6">
-      <h1 className="text-3xl font-extrabold text-ink-900">सेटिंग</h1>
+      <h1 className="text-3xl font-extrabold text-ink-900">{t("सेटिंग")}</h1>
       <p className="mt-1 text-sm font-semibold tracking-wide text-ink-500 uppercase">Settings</p>
 
       {!caps.secure ? (
         <Card className="mt-5 border-sindoor-200 bg-sindoor-700">
-          <p className="text-lg font-bold text-white">सुरक्षित कनेक्शन नहीं है</p>
+          <p className="text-lg font-bold text-white">{t("सुरक्षित कनेक्शन नहीं है")}</p>
           <p className="mt-2 text-sm leading-[1.85] text-cream-200">
-            अभी यह ऐप <b>http</b> पर चल रहा है। रोज़ का संदेश, फ़ोन में इंस्टॉल, और पूजा के
-            दौरान स्क्रीन जली रखना — ये सब <b>https</b> पर ही चलते हैं। पूजा और स्ट्रीक फिर भी
-            ठीक से काम करेंगे।
+            {t("अभी यह ऐप")} <b>http</b> {t("पर चल रहा है। रोज़ का संदेश, फ़ोन में इंस्टॉल, और पूजा के दौरान स्क्रीन जली रखना — ये सब")}{" "}
+            <b>https</b> {t("पर ही चलते हैं। पूजा और स्ट्रीक फिर भी ठीक से काम करेंगे।")}
           </p>
           <p className="mt-3 rounded-2xl bg-sindoor-800/50 px-4 py-2.5 text-xs leading-[1.8] text-cream-200">
-            असली जाँच के लिए ऐप को किसी https पते पर चलाएँ, या अपने फ़ोन के अलार्म में{" "}
-            {formatTime(state.profile.reminderTime)} लगा लीजिए।
+            {t("असली जाँच के लिए ऐप को किसी https पते पर चलाएँ, या अपने फ़ोन के अलार्म में")} {" "}
+            {formatTime(state.profile.reminderTime)} {t("लगा लीजिए।")}
           </p>
         </Card>
       ) : null}
@@ -112,7 +118,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
             size="md"
             onClick={() => actions.updateProfile({ name: name.trim() })}
           >
-            सहेजें
+            {t("सहेजें")}
           </Button>
         </div>
       </Card>
@@ -122,13 +128,13 @@ export function Settings({ onReset }: { onReset: () => void }) {
         <Toggle
           checked={state.profile.reminderEnabled}
           onChange={toggleNotifications}
-          label="याद दिलाना चालू रखें"
+          label={t("याद दिलाना चालू रखें")}
         />
 
         <p className="mt-4 text-sm font-semibold text-ink-700">
-          समय: <span className="text-saffron-700">{formatTime(state.profile.reminderTime)}</span>
+          {t("समय:")} <span className="text-saffron-700">{formatTime(state.profile.reminderTime)}</span>
           <span className="ml-2 font-normal text-ink-500">
-            (हर दिन {formatNextReminder(state.profile.reminderTime)})
+            ({t("हर दिन")} {formatNextReminder(state.profile.reminderTime)})
           </span>
         </p>
 
@@ -139,15 +145,14 @@ export function Settings({ onReset }: { onReset: () => void }) {
               <p className="text-xs leading-[1.75] text-ink-700">
                 {nativeScheduled ? (
                   <>
-                    <b>हर दिन लगा हुआ है।</b> ऐप बंद हो, फ़ोन बंद हो, कुछ भी हो — संदेश आ
-                    जाएगा।
+                    <b>{t("हर दिन लगा हुआ है।")}</b> {t("ऐप बंद हो, फ़ोन बंद हो, कुछ भी हो — संदेश आ जाएगा।")}
                   </>
                 ) : state.profile.reminderEnabled ? (
                   <>
-                    <b>चालू है, पर समय नहीं लगा।</b> ऐप एक बार खोलिए, समय दोबारा चुनिए।
+                    <b>{t("चालू है, पर समय नहीं लगा।")}</b> {t("ऐप एक बार खोलिए, समय दोबारा चुनिए।")}
                   </>
                 ) : (
-                  <>ऐप बंद होने पर भी संदेश आएगा — यही Android ऐप की सबसे बड़ी बात है।</>
+                  <>{t("ऐप बंद होने पर भी संदेश आएगा — यही Android ऐप की सबसे बड़ी बात है।")}</>
                 )}
               </p>
             </div>
@@ -155,10 +160,10 @@ export function Settings({ onReset }: { onReset: () => void }) {
             {exactAlarm === "denied" ? (
               <div className="rounded-2xl border border-saffron-200 bg-white px-4 py-3">
                 <p className="text-xs leading-[1.75] font-semibold text-ink-900">
-                  Android से ठीक समय पर संदेश देने की अनुमति माँगी ज़रूरी है
+                  {t("Android से ठीक समय पर संदेश देने की अनुमति माँगी ज़रूरी है")}
                 </p>
                 <p className="mt-1 text-[11px] leading-[1.7] text-ink-500">
-                  बिना इसके फ़ोन संदेश देर से दिखा सकता है।
+                  {t("बिना इसके फ़ोन संदेश देर से दिखा सकता है।")}
                 </p>
                 <Button
                   variant="primary"
@@ -168,13 +173,13 @@ export function Settings({ onReset }: { onReset: () => void }) {
                   onClick={async () => {
                     const asked = await openExactAlarmSettings();
                     if (!asked) {
-                      setNotice(`Android सेटिंग्स में "Alarms & reminders" खोलिए।`);
+                      setNotice(t("Android सेटिंग्स में \"Alarms & reminders\" खोलिए।"));
                       return;
                     }
                     setExactAlarm(await exactAlarmState());
                   }}
                 >
-                  अनुमति देने के लिए खोलें
+                  {t("अनुमति देने के लिए खोलें")}
                 </Button>
               </div>
             ) : null}
@@ -200,7 +205,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
         </div>
 
         <label className="mt-3 block text-sm font-semibold text-ink-500">
-          अपना समय चुनें
+          {t("अपना समय चुनें")}
           <input
             type="time"
             value={state.profile.reminderTime}
@@ -213,20 +218,20 @@ export function Settings({ onReset }: { onReset: () => void }) {
 
         <div className="mt-4 rounded-3xl bg-cream-200/70 p-4">
           <p className="text-[11px] font-bold tracking-[0.14em] text-ink-500 uppercase">
-            ऐसा संदेश आएगा
+            {t("ऐसा संदेश आएगा")}
           </p>
           <p className="mt-1.5 text-base leading-relaxed font-bold text-ink-900">
             {reminderText(state.profile.name)}
           </p>
           {caps.notificationsGranted ? (
             <Button variant="soft" size="md" block className="mt-3" onClick={sendTest}>
-              अभी संदेश भेजकर देखें
+              {t("अभी संदेश भेजकर देखें")}
             </Button>
           ) : (
             <p className="mt-3 rounded-2xl bg-cream-300/70 px-4 py-2.5 text-xs leading-[1.8] text-ink-700">
               {caps.secure
-                ? "पहले ऊपर वाला स्विच चालू कीजिए — फिर यह संदेश जाँच सकेंगे।"
-                : "यह जाँच https पर ही हो पाएगी।"}
+                ? t("पहले ऊपर वाला स्विच चालू कीजिए — फिर यह संदेश जाँच सकेंगे।")
+                : t("यह जाँच https पर ही हो पाएगी।")}
             </p>
           )}
         </div>
@@ -234,15 +239,14 @@ export function Settings({ onReset }: { onReset: () => void }) {
         <p className="mt-3 rounded-3xl bg-cream-200/70 p-4 text-xs leading-[1.85] text-ink-700">
           {native ? (
             <>
-              यह संदेश Android के अलार्म पर लगा है — ऐप बंद होने पर भी आएगा। बस फ़ोन में
-              "Alarms &amp; reminders" से Bajrang को अनुमति दी हो तो ठीक समय आएगा।
+              {t("यह संदेश Android के अलार्म पर लगा है — ऐप बंद होने पर भी आएगा। बस फ़ोन में")} {" "}
+              <b>Alarms &amp; reminders</b> {t("से Bajrang को अनुमति दी हो तो ठीक समय आएगा।")}
             </>
           ) : (
             <>
-              यह PWA संस्करण है। ब्राउज़र बंद होने पर संदेश नहीं आ पाता, इसलिए भरोसेमंद
-              नहीं। <b>Android ऐप</b> में यह हर दिन, ऐप बंद होने पर भी आता है — और वीडियो
-              पर वही नाम, वही संदेश, वही स्ट्रीक चलती है। सबसे भरोसेमंद तरीका अभी भी:
-              फ़ोन की अलार्म में भी {formatTime(state.profile.reminderTime)} लगा लीजिए।
+              {t("यह PWA संस्करण है। ब्राउज़र बंद होने पर संदेश नहीं आ पाता, इसलिए भरोसेमंद नहीं।")} <b>{t("Android ऐप")}</b>{" "}
+              {t("में यह हर दिन, ऐप बंद होने पर भी आता है — और वीडियो पर वही नाम, वही संदेश, वही स्ट्रीक चलती है। सबसे भरोसेमंद तरीका अभी भी:")} {" "}
+              {t("फ़ोन की अलार्म में भी")} {formatTime(state.profile.reminderTime)} {t("लगा लीजिए।")}
             </>
           )}
         </p>
@@ -251,19 +255,21 @@ export function Settings({ onReset }: { onReset: () => void }) {
       <Card className="mt-4">
         <SectionTitle hindi="विश्राम" english="Pause" />
         <p className="text-sm leading-[1.85] text-ink-500">
-          कभी-कभी बीमारी, यात्रा, या कोई मजबूरी होती है। ऐसे समय में डाँटने की बजाय रुक
-          लीजिए — आपकी साधना जहाँ थी वहीं जुकी रहेगी। रुके हुए दिन छूटे नहीं गिने जाएँगे।
+          {t("कभी-कभी बीमारी, यात्रा, या कोई मजबूरी होती है। ऐसे समय में डाँटने की बजाय रुक लीजिए — आपकी साधना जहाँ थी वहीं जुकी रहेगी। रुके हुए दिन छूटे नहीं गिने जाएँगे।")}
         </p>
 
         {state.isPaused ? (
           <div className="mt-4 rounded-3xl border border-saffron-200 bg-cream-200/70 p-4">
             <p className="text-base font-bold text-ink-900">
-              🛌 विश्राम जारी है
+              🛌 {t("विश्राम जारी है")}
             </p>
             <p className="mt-1.5 text-sm leading-[1.8] text-ink-700">
               {state.pauseDaysLeft > 0
-                ? `${toHindiDigits(state.pauseDaysLeft)} दिन और। सिलसिला ${toHindiDigits(state.streak)} दिन पर जुका हुआ है।`
-                : "आज अंतिम दिन है।"}
+                ? fmt("{d} दिन और। सिलसिला {s} दिन पर जुका हुआ है।", {
+                    d: toNativeDigits(state.pauseDaysLeft),
+                    s: toNativeDigits(state.streak),
+                  })
+                : t("आज अंतिम दिन है।")}
             </p>
             <Button
               variant="primary"
@@ -272,10 +278,10 @@ export function Settings({ onReset }: { onReset: () => void }) {
               className="mt-3"
               onClick={() => {
                 actions.resumeFromPause();
-                setNotice("विश्राम समाप्त। फिर शुरू करें 🙏");
+                setNotice(t("विश्राम समाप्त। फिर शुरू करें 🙏"));
               }}
             >
-              अभी लौटें
+              {t("अभी लौटें")}
             </Button>
           </div>
         ) : (
@@ -287,10 +293,10 @@ export function Settings({ onReset }: { onReset: () => void }) {
                 size="md"
                 onClick={() => {
                   actions.pauseFor(days);
-                  setNotice(`${toHindiDigits(days)} दिन का विश्राम। आराम करिए।`);
+                  setNotice(fmt("{d} दिन का विश्राम। आराम करिए।", { d: toNativeDigits(days) }));
                 }}
               >
-                🛌 {toHindiDigits(days)} दिन
+                🛌 {toNativeDigits(days)} {t("दिन")}
               </Button>
             ))}
           </div>
@@ -313,28 +319,28 @@ export function Settings({ onReset }: { onReset: () => void }) {
             </span>
           ))}
           <p className="ml-1 text-sm font-bold text-ink-700">
-            {toHindiDigits(state.graceDays)} / {toHindiDigits(GRACE_MAX)} बाकी
+            {toNativeDigits(state.graceDays)} / {toNativeDigits(GRACE_MAX)} {t("बाकी")}
           </p>
         </div>
         <p className="mt-3 text-xs leading-[1.85] text-ink-500">
-          हर {toHindiDigits(GRACE_EVERY_DAYS)} दिन लगातार पूजा करने पर एक क्षमा दिन अपने आप
-          मिलता है। दिन छूट जाए तो यह अपने आप लग जाती है — इसलिए बार-बार सिलसिला नहीं टूटता।
+          {fmt("हर {n} दिन लगातार पूजा करने पर एक क्षमा दिन अपने आप मिलता है। दिन छूट जाए तो यह अपने आप लग जाती है — इसलिए बार-बार सिलसिला नहीं टूटता।", {
+            n: toNativeDigits(GRACE_EVERY_DAYS),
+          })}
         </p>
       </Card>
 
       <Card className="mt-4">
         <SectionTitle hindi="दिन की शुरुआत" english="Day boundary" />
         <p className="text-sm leading-[1.85] text-ink-700">
-          दिन <b>रात 3:00 बजे</b> से शुरू होता है। रात 2 बजे की पूजा पहले दिन की गिनी जाती
-          है — जैसे परंपरा में भी तिथि सूर्योदय से चलती है।
+          {t("दिन")} <b>{t("रात 3:00 बजे")}</b> {t("से शुरू होता है। रात 2 बजे की पूजा पहले दिन की गिनी जाती है — जैसे परंपरा में भी तिथि सूर्योदय से चलती है।")}
         </p>
         <p className="mt-2 text-xs leading-[1.75] text-ink-500">
-          अभी पूजा का दिन है:{" "}
+          {t("अभी पूजा का दिन है:")} {" "}
           <span className="font-semibold text-saffron-700">
-            {formatFullHindiDate(calendarDateForDevotionalDay())}
+            {formatFullDate(calendarDateForDevotionalDay())}
           </span>
           {new Date().getHours() < DAY_BOUNDARY_HOUR
-            ? ` — घड़ी के हिसाब से ${formatFullHindiDate(new Date())} की रात है, पर पूजा का दिन पिछला ही चल रहा है।`
+            ? ` ${t("— घड़ी के हिसाब से")} ${formatFullDate(new Date())} ${t("की रात है, पर पूजा का दिन पिछला ही चल रहा है।")}`
             : ""}
         </p>
       </Card>
@@ -348,65 +354,61 @@ export function Settings({ onReset }: { onReset: () => void }) {
             actions.updateProfile({ chantingEnabled: next });
             if (next) playChime();
           }}
-          label="पूजा के दौरान हल्का ॐ मंत्र"
+          label={t("पूजा के दौरान हल्का ॐ मंत्र")}
         />
         <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          बहुत धीमी, बहुत हल्की आवाज़ — साँस जैसी। पूजा के दौरान 🔊 बटन से भी बंद/चालू कर सकते हैं।
+          {t("बहुत धीमी, बहुत हल्की आवाज़ — साँस जैसी। पूजा के दौरान 🔊 बटन से भी बंद/चालू कर सकते हैं।")}
         </p>
       </Card>
 
       <Card className="mt-4">
         <SectionTitle hindi="भाषा" english="Language" />
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => actions.updateProfile({ language: "hi" })}
-            className={cn(
-              "rounded-2xl border-2 px-4 py-3 text-sm font-bold",
-              state.profile.language === "hi"
-                ? "border-saffron-500 bg-saffron-500 text-white"
-                : "border-saffron-200 bg-white text-ink-700",
-            )}
-          >
-            हिंदी
-          </button>
-          <button
-            type="button"
-            onClick={() => actions.updateProfile({ language: "en" })}
-            className={cn(
-              "rounded-2xl border-2 px-4 py-3 text-sm font-bold",
-              state.profile.language === "en"
-                ? "border-saffron-500 bg-saffron-500 text-white"
-                : "border-saffron-200 bg-white text-ink-700",
-            )}
-          >
-            English
-          </button>
+          {LANGS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setLang(item.id)}
+              className={cn(
+                "rounded-2xl border-2 px-4 py-3 text-base font-bold transition-colors",
+                lang === item.id
+                  ? "border-saffron-500 bg-saffron-500 text-white"
+                  : "border-saffron-200 bg-white text-ink-700",
+              )}
+            >
+              <span>{item.label}</span>
+              <span className="ml-1.5 text-[10px] font-semibold tracking-wide uppercase opacity-70">
+                {item.english}
+              </span>
+            </button>
+          ))}
         </div>
-        {state.profile.language === "en" ? (
-          <p className="mt-3 text-xs leading-relaxed text-ink-500">
-            English labels appear on buttons, but the bhakti content stays in Hindi.
-          </p>
-        ) : null}
+        <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          {t("श्रीरामचरितमानस की भाषा में")}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-500">
+          {lang === "bn"
+            ? t("বাংলায় শ্লোক দেবনাগরিতেই থাকবে")
+            : t("हिंदी में श्लोक उसी मूल रूप में रहते हैं")}
+        </p>
       </Card>
-
       <Card className="mt-4">
         <SectionTitle hindi="आपकी साधना" english="Your data" />
         <div className="grid grid-cols-3 gap-3 text-center">
-          <Stat label="स्ट्रीक" value={state.streak} />
-          <Stat label="कुल" value={state.totalCompleted} />
-          <Stat label="सर्वश्रेष्ठ" value={state.bestStreak} />
+          <Stat label={t("स्ट्रीक")} value={state.streak} />
+          <Stat label={t("कुल")} value={state.totalCompleted} />
+          <Stat label={t("सर्वश्रेष्ठ")} value={state.bestStreak} />
         </div>
         <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          सारी जानकारी सिर्फ़ आपके फ़ोन में सहेजी है — कोई अकाउंट नहीं, कोई सर्वर नहीं।
+          {t("सारी जानकारी सिर्फ़ आपके फ़ोन में सहेजी है — कोई अकाउंट नहीं, कोई सर्वर नहीं।")}
         </p>
       </Card>
 
       <Card className="mt-4">
         <SectionTitle hindi="ऐप के बारे में" english="About" />
         <ul className="space-y-1.5 text-sm text-ink-700">
-          <li>जय बजरंगबली 🙏</li>
-          <li>रोज़ एक मिनट की पूजा, बस इतनी सी।</li>
+          <li>{t("जय बजरंगबली 🙏")}</li>
+          <li>{t("रोज़ एक मिनट की पूजा, बस इतनी सी।")}</li>
           <li>Bajrang · v0.1</li>
         </ul>
       </Card>
@@ -415,7 +417,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
         {confirmingReset ? (
           <div className="space-y-3">
             <p className="rounded-2xl bg-cream-300/70 px-4 py-3 text-sm leading-relaxed text-ink-700">
-              सारी जानकारी मिट जाएगी — नाम, संकल्प और स्ट्रीक। क्या आप नया शुरुआत करना चाहते हैं?
+              {t("सारी जानकारी मिट जाएगी — नाम, संकल्प और स्ट्रीक। क्या आप नया शुरुआत करना चाहते हैं?")}
             </p>
             <div className="flex gap-2">
               <Button
@@ -428,10 +430,10 @@ export function Settings({ onReset }: { onReset: () => void }) {
                   onReset();
                 }}
               >
-                हाँ, नया शुरुआत करें
+                {t("हाँ, नया शुरुआत करें")}
               </Button>
               <Button variant="ghost" size="lg" onClick={() => setConfirmingReset(false)}>
-                नहीं
+                {t("नहीं")}
               </Button>
             </div>
           </div>
@@ -441,7 +443,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
             onClick={() => setConfirmingReset(true)}
             className="w-full rounded-3xl border border-saffron-200 bg-white/70 py-3.5 text-sm font-bold text-sindoor-600"
           >
-            सब कुछ मिटाएँ · Reset
+            {t("सब कुछ मिटाएँ")} · Reset
           </button>
         )}
       </div>
@@ -493,7 +495,7 @@ function Toggle({
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl bg-cream-200/70 px-2 py-3">
-      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">{toHindiDigits(value)}</p>
+      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">{toNativeDigits(value)}</p>
       <p className="mt-0.5 text-[11px] font-semibold text-ink-500">{label}</p>
     </div>
   );

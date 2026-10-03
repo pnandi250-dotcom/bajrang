@@ -2,21 +2,23 @@ import { useMemo, useState } from "react";
 import { useDerivedState } from "../lib/store";
 import { loadFestivals, nextFestival, saveFestivals } from "../lib/festivals";
 import {
-  HINDI_MONTHS,
   calendarDateForDevotionalDay,
+  monthNames,
   devotionalDateKey,
-  HINDI_WEEKDAYS,
+  weekdayNames,
   MANGALVAR,
   SHANIVAR,
   fromDateKey,
   toDateKey,
-  toHindiDigits,
+  toNativeDigits,
 } from "../lib/date";
 import { Card, SectionTitle } from "../components/ui/Card";
+import { useT } from "../lib/i18n";
 import { cn } from "../lib/utils";
 
 export function Calendar() {
   const state = useDerivedState();
+  const t = useT();
   const [month, setMonth] = useState(() => {
     const now = calendarDateForDevotionalDay();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -44,7 +46,7 @@ export function Calendar() {
 
   return (
     <div className="safe-top px-5 pt-3 pb-6">
-      <h1 className="text-3xl font-extrabold text-ink-900">पंचांग</h1>
+      <h1 className="text-3xl font-extrabold text-ink-900">{t("पंचांग")}</h1>
       <p className="mt-1 text-sm font-semibold tracking-wide text-ink-500 uppercase">
         Calendar · Tuesday & Saturday
       </p>
@@ -52,19 +54,19 @@ export function Calendar() {
       {upcoming ? (
         <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/70 to-white">
           <p className="text-[11px] font-bold tracking-[0.14em] text-gold-600 uppercase">
-            आने वाला त्योहार
+            {t("आने वाला त्योहार")}
           </p>
           <p className="mt-1.5 text-2xl font-extrabold text-ink-900">
             {upcoming.festival.name}
           </p>
           <p className="mt-1 text-lg font-bold text-saffron-700">
             {upcoming.daysUntil === 0
-              ? "आज ही है! 🙏"
-              : `${toHindiDigits(upcoming.daysUntil)} दिन बाकी`}
+              ? t("आज ही है! 🙏")
+              : `${toNativeDigits(upcoming.daysUntil)} ${t("दिन बाकी")}`}
           </p>
           <p className="mt-1 text-sm text-ink-500">
             {fromDateKey(upcoming.festival.date).getDate()}{" "}
-            {HINDI_MONTHS[fromDateKey(upcoming.festival.date).getMonth()]}
+            {monthNames()[fromDateKey(upcoming.festival.date).getMonth()]}
           </p>
           {upcoming.festival.note ? (
             <p className="mt-3 rounded-2xl bg-white/70 px-4 py-2.5 text-xs leading-relaxed text-ink-500">
@@ -80,25 +82,25 @@ export function Calendar() {
             type="button"
             onClick={() => shiftMonth(-1)}
             className="pressable grid h-11 w-11 place-items-center rounded-full bg-cream-200 text-lg font-bold text-ink-700"
-            aria-label="पिछला महीना"
+            aria-label={t("पिछला महीना")}
           >
             ‹
           </button>
           <p className="text-lg font-extrabold text-ink-900">
-            {HINDI_MONTHS[month.getMonth()]} {toHindiDigits(month.getFullYear())}
+            {monthNames()[month.getMonth()]} {toNativeDigits(month.getFullYear())}
           </p>
           <button
             type="button"
             onClick={() => shiftMonth(1)}
             className="pressable grid h-11 w-11 place-items-center rounded-full bg-cream-200 text-lg font-bold text-ink-700"
-            aria-label="अगला महीना"
+            aria-label={t("अगला महीना")}
           >
             ›
           </button>
         </div>
 
         <div className="mt-4 grid grid-cols-7 gap-1 text-center">
-          {HINDI_WEEKDAYS.map((day) => (
+          {weekdayNames().map((day) => (
             <span key={day} className="text-[11px] font-bold text-ink-500">
               {day.slice(0, 3)}
             </span>
@@ -117,7 +119,7 @@ export function Calendar() {
                 !cell.day && "bg-transparent",
               )}
             >
-              {cell.day ? <span className="font-semibold tabular-nums">{toHindiDigits(cell.day)}</span> : null}
+              {cell.day ? <span className="font-semibold tabular-nums">{toNativeDigits(cell.day)}</span> : null}
               {cell.special && cell.day ? (
                 <span className="text-[10px] leading-none">🚩</span>
               ) : cell.day ? (
@@ -136,13 +138,13 @@ export function Calendar() {
 
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-semibold text-ink-500">
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded bg-saffron-100" /> मंगलवार / शनिवार
+            <span className="h-3 w-3 rounded bg-saffron-100" /> {t("मंगलवार / शनिवार")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded bg-saffron-500" /> पूजा पूरी
+            <span className="h-3 w-3 rounded bg-saffron-500" /> {t("पूजा पूरी")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full ring-2 ring-saffron-500" /> आज
+            <span className="h-3 w-3 rounded-full ring-2 ring-saffron-500" /> {t("आज")}
           </span>
         </div>
 
@@ -152,7 +154,7 @@ export function Calendar() {
             onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}
             className="mt-4 w-full rounded-2xl bg-cream-200 py-2.5 text-sm font-bold text-saffron-700"
           >
-            इस महीने पर लौटें
+            {t("इस महीने पर लौटें")}
           </button>
         ) : null}
       </Card>
@@ -163,18 +165,18 @@ export function Calendar() {
           <li className="flex gap-2">
             <span>🚩</span>
             <span>
-              <b>मंगलवार</b> — हनुमान जी का प्रिय दिन
+              <b>{t("मंगलवार")}</b> {t("— हनुमान जी का प्रिय दिन")}
             </span>
           </li>
           <li className="flex gap-2">
             <span>🚩</span>
             <span>
-              <b>शनिवार</b> — संकष्टी, हनुमान जी के लिए समर्पित
+              <b>{t("शनिवार")}</b> {t("— संकष्टी, हनुमान जी के लिए समर्पित")}
             </span>
           </li>
         </ul>
         <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          हर हफ़्ते दो बार संकल्प दोहराना आसान है — बस एक मिनट।
+          {t("हर हफ़्ते दो बार संकल्प दोहराना आसान है — बस एक मिनट।")}
         </p>
       </Card>
 
@@ -184,7 +186,7 @@ export function Calendar() {
           {festivals.map((festival) => (
             <div key={festival.id} className="rounded-2xl bg-cream-200/50 p-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-bold text-ink-900">{festival.name}</span>
+                <span className="text-sm font-bold text-ink-900">{t(festival.name)}</span>
                 <input
                   type="date"
                   value={festival.date}
@@ -193,19 +195,18 @@ export function Calendar() {
                 />
               </div>
               <p className="mt-1.5 text-[11px] font-semibold text-saffron-700">
-                स्रोत: {festival.source}
+                {t("स्रोत:")} {t(festival.source)}
               </p>
               {festival.note ? (
-                <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{festival.note}</p>
+                <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{t(festival.note ?? "")}</p>
               ) : null}
             </div>
           ))}
         </div>
 
         <p className="mt-3 rounded-2xl bg-gold-200/40 px-4 py-3 text-xs leading-[1.8] text-ink-700">
-          ये तिथियाँ <b>Drik Panchang</b> (drikpanchang.com) से ली गई हैं। भारत के पंचांग के
-          हिसाब से चाँद वाले त्योहार एक दिन ऊपर-नीचे हो सकते हैं, और दूसरे देशों में यही तिथि
-          एक दिन पहले पड़ सकती है। अपने इलाके की पंचांग से मिलाकर ऊपर वाली तारीख बदल दीजिए।
+          {t("ये तिथियाँ")} <b>Drik Panchang</b>{" "}
+          {t("(drikpanchang.com) से ली गई हैं। भारत के पंचांग के हिसाब से चाँद वाले त्योहार एक दिन ऊपर-नीचे हो सकते हैं, और दूसरे देशों में यही तिथि एक दिन पहले पड़ सकती है। अपने इलाके की पंचांग से मिलाकर ऊपर वाली तारीख बदल दीजिए।")}
         </p>
 
         <button
@@ -213,15 +214,14 @@ export function Calendar() {
           onClick={() => setEditing(!editing)}
           className="pressable mt-3 text-xs font-bold text-saffron-700 underline underline-offset-4"
         >
-          {editing ? "बंद करें" : "स्रोत देखें"}
+          {editing ? t("बंद करें") : t("स्रोत देखें")}
         </button>
         {editing ? (
           <div className="mt-2 space-y-1.5 rounded-2xl bg-cream-200/70 px-4 py-3 text-xs leading-[1.8] text-ink-700">
-            <p>• चैत्र पूर्णिमा (हनुमान जयंती): drikpanchang.com/vrats/purnimasidates.html</p>
-            <p>• राम नवमी: drikpanchang.com/hindu-festivals/rama-navami</p>
+            <p>{t("• चैत्र पूर्णिमा (हनुमान जयंती): drikpanchang.com/vrats/purnimasidates.html")}</p>
+            <p>{t("• राम नवमी: drikpanchang.com/hindu-festivals/rama-navami")}</p>
             <p className="pt-1 text-ink-500">
-              अपने इलाके के पंचांग या धर्मप्रधान से भी तिथि जाँच लीजिए — पंचांग हर जगह एक
-              जैसा नहीं होता।
+              {t("अपने इलाके के पंचांग या धर्मप्रधान से भी तिथि जाँच लीजिए — पंचांग हर जगह एक जैसा नहीं होता।")}
             </p>
           </div>
         ) : null}

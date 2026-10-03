@@ -1,10 +1,38 @@
+import { getLang, type Lang } from "./i18n";
+import { VERSE_BN, HOPE_BN, SANKALP_BN } from "./contentBn";
+
+/** भाषा के हिसाब से दिखने वाला श्लोक — पंक्तियाँ मूल देवनागरी में ही रहती हैं */
+export type VerseView = {
+  id: string;
+  source: string;
+  lines: string[];
+  meaning: string;
+  chant?: string;
+};
+
+export function verseView(verse: Verse, lang: Lang = getLang()): VerseView {
+  const bn = VERSE_BN[verse.id];
+  const useBn = lang === "bn" && Boolean(bn);
+  return {
+    id: verse.id,
+    source: useBn ? bn.source : verse.source,
+    lines: verse.lines,
+    meaning: useBn ? bn.meaning : verse.meaning,
+    chant: verse.chant,
+  };
+}
+
 export type Verse = {
   id: string;
   /** छोटा शीर्षक, जैसे "हनुमान चालीसा — चौपाई" */
   source: string;
+  /** বাংলায় সূত্র — ব্যবহারকারীর ভাষা অনুযায়ী বেছে নেওয়া হয় */
+  sourceBn?: string;
   lines: string[];
-  /** बहुत सरल हिंदी में अर्थ — सिर्फ़ उन्हीं पंक्तियों का */
+  /** বহुत সরল हिंदी में अर्थ — सिर्फ़ उन्हीं पंक्तियों का */
   meaning: string;
+  /** বাংলা অর্থ। পংক্তিগুলো মূল দेवনাগরিতেই থাকে — সেগুলো উদ্ধৃতি। */
+  meaningBn?: string;
   /** जप का समय (वैकल्पिक) */
   chant?: string;
   /**
@@ -310,16 +338,20 @@ export const HOPE_MESSAGES: string[] = [
   "धीरे-धीरे चलिए, पहुँचना तो है",
 ];
 
-export function verseOfDay(date: Date): Verse {
+/** भाषा के हिसाब से संदेश — बंगाली में क्रम वही रहेगा */
+export function verseOfDay(date: Date, lang: Lang = getLang()): VerseView {
   const key = date.getFullYear() * 372 + date.getMonth() * 31 + date.getDate();
-  return VERSES[key % VERSES.length];
+  return verseView(VERSES[key % VERSES.length], lang);
 }
 
-export function hopeOfDay(date: Date): string {
+export function hopeOfDay(date: Date, lang: Lang = getLang()): string {
   const key = date.getFullYear() * 366 + Math.floor(
     (date.getTime() - date.getTimezoneOffset() * 60_000) / 86_400_000,
   );
-  return HOPE_MESSAGES[Math.abs(key) % HOPE_MESSAGES.length];
+  const index = Math.abs(key) % HOPE_MESSAGES.length;
+  return lang === "bn"
+    ? (HOPE_BN[index] ?? HOPE_MESSAGES[index])
+    : HOPE_MESSAGES[index];
 }
 
 /** संकल्प से जुड़ी हर दिन की छोटी प्रेरणा */
@@ -334,8 +366,13 @@ export const SANKALP_MESSAGES: string[] = [
   "आप लगातार पूजा कर रहे हैं, यही सबसे बड़ी जीत है",
 ];
 
-export function sankalpMessageOfDay(date: Date, sankalp: string): string {
+export function sankalpMessageOfDay(
+  date: Date,
+  sankalp: string,
+  lang: Lang = getLang(),
+): string {
   const key = date.getDate() + date.getMonth() * 31;
-  const base = SANKALP_MESSAGES[key % SANKALP_MESSAGES.length];
+  const index = key % SANKALP_MESSAGES.length;
+  const base = lang === "bn" ? (SANKALP_BN[index] ?? SANKALP_MESSAGES[index]) : SANKALP_MESSAGES[index];
   return sankalp ? `${sankalp} — ${base}` : base;
 }

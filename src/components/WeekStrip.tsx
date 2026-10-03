@@ -1,16 +1,18 @@
 import {
-  HINDI_WEEKDAYS_SHORT,
   addDays,
   calendarDateForDevotionalDay,
   hanumanDayName,
   toDateKey,
+  weekdayShort,
 } from "../lib/date";
 import { useDerivedState } from "../lib/store";
+import { useT } from "../lib/i18n";
 import { cn } from "../lib/utils";
 
 /** पिछले 7 दिन — पूरी हुई पूजा के निशान के साथ। */
 export function WeekStrip() {
   const state = useDerivedState();
+  useT();
   const completed = new Set(state.completedDates);
   // पूजा का दिन — रात 3 बजे के बाद यह कल हो जाता है
   const today = calendarDateForDevotionalDay();
@@ -21,7 +23,7 @@ export function WeekStrip() {
     return {
       date,
       key,
-      day: HINDI_WEEKDAYS_SHORT[date.getDay()],
+      day: weekdayShort()[date.getDay()],
       done: completed.has(key),
       isToday: key === state.todayKey,
       special: hanumanDayName(date) !== null,

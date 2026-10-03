@@ -1,3 +1,5 @@
+import { getLang, type Lang } from "./i18n";
+
 export const HINDI_WEEKDAYS = [
   "रविवार",
   "सोमवार",
@@ -33,7 +35,43 @@ export const HINDI_MONTHS = [
   "दिसंबर",
 ] as const;
 
+export const BENGALI_MONTHS = [
+  "জানুয়ারি",
+  "ফেব্রুয়ারি",
+  "মার্চ",
+  "এপ্রিল",
+  "মে",
+  "জুন",
+  "জুলাই",
+  "আগস্ট",
+  "সেপ্টেম্বর",
+  "অক্টোবর",
+  "নভেম্বর",
+  "ডিসেম্বর",
+] as const;
+
+export const BENGALI_WEEKDAYS = [
+  "রবিবার",
+  "সোমবার",
+  "মঙ্গলবার",
+  "বুধবার",
+  "বৃহস্পতিবার",
+  "শুক্রবার",
+  "শনিবার",
+] as const;
+
+export const BENGALI_WEEKDAYS_SHORT = [
+  "রবি",
+  "সোম",
+  "মঙ্গল",
+  "বুধ",
+  "বৃহঃ",
+  "শুক্র",
+  "শনি",
+] as const;
+
 export const HINDI_DIGITS = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+export const BENGALI_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
 export const MANGALVAR = 2;
 export const SHANIVAR = 6;
@@ -106,31 +144,63 @@ export function isHanumanDay(date: Date): boolean {
   return day === MANGALVAR || day === SHANIVAR;
 }
 
-export function hanumanDayName(date: Date): string | null {
-  if (date.getDay() === MANGALVAR) return "मंगलवार";
-  if (date.getDay() === SHANIVAR) return "शनिवार";
+export function hanumanDayName(date: Date, lang: Lang = getLang()): string | null {
+  const names = weekdayNames(lang);
+  if (date.getDay() === MANGALVAR) return names[2];
+  if (date.getDay() === SHANIVAR) return names[6];
   return null;
 }
 
-/** 1 -> "१", 2026 -> "२०२६" */
-export function toHindiDigits(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => HINDI_DIGITS[Number(d)]);
+/** 1 -> "१" (हिंदी) या "১" (বাংলा), 2026 -> "२०२६" / "২০২৬" */
+export function toNativeDigits(value: number | string, lang: Lang = getLang()): string {
+  const digits = lang === "bn" ? BENGALI_DIGITS : HINDI_DIGITS;
+  return String(value).replace(/\d/g, (d) => digits[Number(d)]);
 }
 
-export function formatHindiDate(date: Date): string {
-  return `${toHindiDigits(date.getDate())} ${HINDI_MONTHS[date.getMonth()]}`;
+/** भाषा के हिसाब से महीने के नाम */
+export function monthNames(lang: Lang = getLang()): readonly string[] {
+  return lang === "bn" ? BENGALI_MONTHS : HINDI_MONTHS;
 }
 
-export function formatFullHindiDate(date: Date): string {
-  return `${formatHindiDate(date)} ${toHindiDigits(date.getFullYear())}`;
+/** भाषा के हिसाब से पूरे दिन के नाम */
+export function weekdayNames(lang: Lang = getLang()): readonly string[] {
+  return lang === "bn" ? BENGALI_WEEKDAYS : HINDI_WEEKDAYS;
 }
 
-export function formatTime(time: string): string {
+/** भाषा के हिसाब से दिन के छोटे नाम */
+export function weekdayShort(lang: Lang = getLang()): readonly string[] {
+  return lang === "bn" ? BENGALI_WEEKDAYS_SHORT : HINDI_WEEKDAYS_SHORT;
+}
+
+export function formatDate(date: Date, lang: Lang = getLang()): string {
+  return `${toNativeDigits(date.getDate(), lang)} ${monthNames(lang)[date.getMonth()]}`;
+}
+
+export function formatFullDate(date: Date, lang: Lang = getLang()): string {
+  return `${formatDate(date, lang)} ${toNativeDigits(date.getFullYear(), lang)}`;
+}
+
+export function formatTime(time: string, lang: Lang = getLang()): string {
   const [hRaw, mRaw] = time.split(":");
   const h = Number(hRaw);
-  const suffix = h < 12 ? "सुबह" : h < 17 ? "दोपहर" : h < 20 ? "शाम" : "रात";
+  const suffix =
+    lang === "bn"
+      ? h < 12
+        ? "সকাল"
+        : h < 17
+          ? "দুপুর"
+          : h < 20
+            ? "সন্ধ্যা"
+            : "রাত"
+      : h < 12
+        ? "सुबह"
+        : h < 17
+          ? "दोपहर"
+          : h < 20
+            ? "शाम"
+            : "रात";
   const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${toHindiDigits(hour12)}:${mRaw} ${suffix}`;
+  return `${toNativeDigits(hour12, lang)}:${mRaw} ${suffix}`;
 }
 
 /** "HH:MM" in 24h form, for <input type="time"> */

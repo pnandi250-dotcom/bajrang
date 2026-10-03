@@ -1,4 +1,5 @@
-import { HINDI_DIGITS } from "./date";
+import { toNativeDigits } from "./date";
+import { t } from "./i18n";
 
 /**
  * साझा करने लायक सुंदर कार्ड — सीधे canvas पर बनता है,
@@ -17,10 +18,6 @@ export type ShareCardData = {
   /** कार्ड पर दिखने वाली अवधि, जैसे "7 दिन" */
   periodLabel: string;
 };
-
-function hindi(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => HINDI_DIGITS[Number(d)]);
-}
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -355,14 +352,14 @@ export function createShareCard(data: ShareCardData): HTMLCanvasElement {
   // शीर्षक
   ctx.fillStyle = "#fff7ec";
   ctx.font = `800 74px ${FONT_STACK}`;
-  ctx.fillText("बजरंग", SIZE / 2, 588);
+  ctx.fillText(t("बजरंग"), SIZE / 2, 588);
 
   ctx.fillStyle = "#f0d083";
   ctx.font = `600 30px ${FONT_STACK}`;
-  ctx.fillText("हर दिन 1 मिनट की हनुमान पूजा", SIZE / 2, 634);
+  ctx.fillText(t("हर दिन 1 मिनट की हनुमान पूजा"), SIZE / 2, 634);
 
   // मुख्य वाक्य — एक ही लाइन में, गोलाई के हिसाब से छोटा होता जाता है
-  const headline = `मैंने ${hindi(data.periodLabel)} लगातार हनुमान चालीसा की`;
+  const headline = t("मैंने {p} लगातार हनुमान चालीसा की").replace("{p}", data.periodLabel);
   ctx.fillStyle = "#fffdf9";
   ctx.font = `800 ${fitFontSize(ctx, headline, SIZE - 190, 64, 800, 40)}px ${FONT_STACK}`;
   wrapText(ctx, headline, SIZE / 2, 706, SIZE - 190, 84, 1);
@@ -386,7 +383,7 @@ export function createShareCard(data: ShareCardData): HTMLCanvasElement {
   ctx.fillText(nameLine, SIZE / 2, badgeY + 58);
 
   // स्ट्रीक + छोटी लौ (emoji नहीं, ताकि गिनती हमेशा सीधी रहे)
-  const streakLine = `${hindi(data.streak)} दिन`;
+  const streakLine = `${toNativeDigits(data.streak)} ${t("दिन")}`;
   ctx.fillStyle = "#ffd15c";
   ctx.font = `800 ${fitFontSize(ctx, streakLine, badgeW - 220, 88, 800, 52)}px ${FONT_STACK}`;
   const streakWidth = ctx.measureText(streakLine).width;
@@ -395,7 +392,7 @@ export function createShareCard(data: ShareCardData): HTMLCanvasElement {
 
   // संकल्प
   if (data.sankalp) {
-    const sankalpLine = `संकल्प: ${data.sankalp}`;
+    const sankalpLine = `${t("संकल्प:")} ${data.sankalp}`;
     ctx.fillStyle = "rgba(255, 247, 236, 0.92)";
     ctx.font = `500 ${fitFontSize(ctx, sankalpLine, SIZE - 200, 34, 500, 22)}px ${FONT_STACK}`;
     wrapText(ctx, sankalpLine, SIZE / 2, badgeY + badgeH + 48, SIZE - 200, 40, 1);
@@ -404,7 +401,7 @@ export function createShareCard(data: ShareCardData): HTMLCanvasElement {
   // समापन
   ctx.fillStyle = "rgba(255, 247, 236, 0.78)";
   ctx.font = `500 26px ${FONT_STACK}`;
-  ctx.fillText("Bajrang · चलो हनुमान जी के साथ जियें", SIZE / 2, 1036);
+  ctx.fillText(`Bajrang · ${t("चलो हनुमान जी के साथ जियें")}`, SIZE / 2, 1036);
 
   return canvas;
 }
@@ -416,10 +413,10 @@ export function shareFileName(streak: number): string {
 
 export function buildShareText(data: ShareCardData): string {
   const parts = [
-    `मैंने ${data.periodLabel} लगातार हनुमान चालीसा की 🙏`,
-    `आज का स्ट्रीक: ${data.streak} दिन 🔥`,
+    `${t("मैंने {p} लगातार हनुमान चालीसा की 🙏").replace("{p}", data.periodLabel)}`,
+    `${t("आज का स्ट्रीक:")} ${toNativeDigits(data.streak)} ${t("दिन")} 🔥`,
   ];
-  if (data.sankalp) parts.push(`मेरा संकल्प: ${data.sankalp}`);
-  parts.push("आप भी रोज़ 1 मिनट हनुमान जी के साथ बिताइए — Bajrang app");
+  if (data.sankalp) parts.push(`${t("मेरा संकल्प:")} ${data.sankalp}`);
+  parts.push(t("आप भी रोज़ 1 मिनट हनुमान जी के साथ बिताइए — Bajrang app"));
   return parts.join("\n");
 }

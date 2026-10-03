@@ -1,8 +1,10 @@
 import { MILESTONES } from "../../lib/store";
-import { toHindiDigits } from "../../lib/date";
+import { toNativeDigits } from "../../lib/date";
+import { useT } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 
 export function MilestoneBadges({ streak }: { streak: number }) {
+  const t = useT();
   return (
     <div className="grid grid-cols-3 gap-3">
       {MILESTONES.map((milestone) => {
@@ -34,7 +36,7 @@ export function MilestoneBadges({ streak }: { streak: number }) {
                 earned ? "text-ink-900" : "text-ink-500",
               )}
             >
-              {toHindiDigits(milestone.days)} दिन
+              {toNativeDigits(milestone.days)} {t("दिन")}
             </p>
             <p
               className={cn(
@@ -46,7 +48,7 @@ export function MilestoneBadges({ streak }: { streak: number }) {
                   : "text-ink-500",
               )}
             >
-              {milestone.label}
+              {t(milestone.label)}
             </p>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-cream-300">
               <div

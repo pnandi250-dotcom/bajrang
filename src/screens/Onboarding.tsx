@@ -1,4 +1,5 @@
 import { actions } from "../lib/store";
+import { useT } from "../lib/i18n";
 import { Button } from "../components/ui/Button";
 
 /**
@@ -8,6 +9,8 @@ import { Button } from "../components/ui/Button";
  * इससे कोई भी बिना कुछ भरे सीधे पूजा कर सकता है — और यही सबसे ज़रूरी है।
  */
 export function Onboarding({ onDone }: { onDone: () => void }) {
+  const t = useT();
+
   function start() {
     actions.completeOnboarding({});
     onDone();
@@ -30,22 +33,22 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </span>
 
           <p className="mt-7 text-[11px] font-bold tracking-[0.2em] text-saffron-600 uppercase">
-            रोज़ एक मिनट
+            {t("रोज़ एक मिनट")}
           </p>
           <h1 className="mt-2 text-[32px] leading-snug font-extrabold text-ink-900">
-            जय बजरंगबली
+            {t("जय बजरंगबली")}
           </h1>
           <p className="mx-auto mt-4 max-w-xs text-[16px] leading-[1.9] text-ink-700">
-            हर रोज़ सिर्फ़ एक मिनट — हनुमान चालीसा का एक पंक्ति, एक घंटी, और आपका संकल्प।
-            कोई नाम पहले नहीं चाहिए, कोई खाता नहीं।
+            {t("हर रोज़ सिर्फ़ एक मिनट — हनुमान चालीसा का एक पंक्ति, एक घंटी, और आपका संकल्प।")}{" "}
+            {t("कोई नाम पहले नहीं चाहिए, कोई खाता नहीं।")}
           </p>
 
           <div className="mt-8 w-full space-y-3">
             <Button variant="primary" size="xl" block onClick={start}>
-              पूजा शुरू करें 🙏
+              {t("पूजा शुरू करें 🙏")}
             </Button>
             <p className="text-xs leading-relaxed text-ink-500">
-              आपका नाम और संकल्प पूजा के बाद पूछा जाएगा।
+              {t("आपका नाम और संकल्प पूजा के बाद पूछा जाएगा।")}
             </p>
           </div>
         </div>

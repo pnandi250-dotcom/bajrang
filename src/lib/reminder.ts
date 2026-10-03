@@ -15,6 +15,7 @@
  */
 
 import { Capacitor } from "@capacitor/core";
+import { t } from "./i18n";
 
 export type ReminderMode = "native" | "web";
 
@@ -34,7 +35,7 @@ export type ReminderOptions = {
 
 export function reminderText(name: string): string {
   const who = name.trim();
-  return `🙏 ${who ? `${who}, ` : ""}हनुमान जी का वार है — आज की पूजा 1 मिनट में पूरी करो`;
+  return `🙏 ${who ? `${who}, ` : ""}${t("हनुमान जी का वार है — आज की पूजा 1 मिनट में पूरी करो")}`;
 }
 
 export function isNative(): boolean {
@@ -100,7 +101,7 @@ export async function scheduleNativeReminder(options: ReminderOptions): Promise<
       notifications: [
         {
           id: NATIVE_ID,
-          title: "जय बजरंगबली 🙏",
+          title: t("जय बजरंगबली 🙏"),
           body: reminderText(options.name),
           schedule: { on: { hour: h, minute: m }, repeats: true },
           smallIcon: "ic_stat_icon",
@@ -172,7 +173,7 @@ export async function sendNativeTestNotification(name: string): Promise<boolean>
       notifications: [
         {
           id: NATIVE_ID + 1,
-          title: "जय बजरंगबली 🙏",
+          title: t("जय बजरंगबली 🙏"),
           body: reminderText(name),
           schedule: { at: new Date(Date.now() + 3000) },
           smallIcon: "ic_stat_icon",
@@ -245,7 +246,7 @@ export async function requestPermission(): Promise<boolean> {
 export async function sendTestReminder(name: string): Promise<boolean> {
   if (isNative()) return sendNativeTestNotification(name);
   if (!(await requestPermission())) return false;
-  return showWebNotification("जय बजरंगबली 🙏", reminderText(name));
+  return showWebNotification(t("जय बजरंगबली 🙏"), reminderText(name));
 }
 
 /** ऐप बंद होकर खुलने पर: समय बीत चुका हो तो एक बार याद दिला दो (सिर्फ़ वेब) */
@@ -266,7 +267,7 @@ async function sendWebCatchUp(options: ReminderOptions) {
   } catch {
     /* कुछ नहीं कर सकते */
   }
-  await showWebNotification("जय बजरंगबली 🙏", reminderText(options.name));
+  await showWebNotification(t("जय बजरंगबली 🙏"), reminderText(options.name));
 }
 
 /** Chrome समर्थन दे तो background sync माँग लें */
@@ -313,7 +314,7 @@ export function scheduleReminder(options: ReminderOptions): () => void {
   if (delay <= 0 || delay > MAX_TIMEOUT) return () => {};
 
   const id = window.setTimeout(() => {
-    void showWebNotification("जय बजरंगबली 🙏", reminderText(name));
+    void showWebNotification(t("जय बजरंगबली 🙏"), reminderText(name));
   }, delay);
 
   return () => window.clearTimeout(id);
@@ -322,7 +323,7 @@ export function scheduleReminder(options: ReminderOptions): () => void {
 /** सेटिंग में दिखाने के लिए: अगला संदेश कब आएगा */
 export function formatNextReminder(time: string): string {
   const { h, m } = parseTime(time);
-  const suffix = h < 12 ? "सुबह" : h < 17 ? "दोपहर" : h < 20 ? "शाम" : "रात";
+  const suffix = t(h < 12 ? "सुबह" : h < 17 ? "दोपहर" : h < 20 ? "शाम" : "रात");
   const hour12 = h % 12 === 0 ? 12 : h % 12;
   return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
 }

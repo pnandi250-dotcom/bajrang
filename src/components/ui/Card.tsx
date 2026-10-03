@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 
 export function Card({
@@ -37,12 +38,13 @@ export function SectionTitle({
   english?: string;
   className?: string;
 }) {
+  const t = useT();
   return (
     <div className={cn("mb-3", className)}>
-      <h2 className="text-lg leading-snug font-bold text-ink-900 sm:text-xl">{hindi}</h2>
+      <h2 className="text-lg leading-snug font-bold text-ink-900 sm:text-xl">{t(hindi)}</h2>
       {english ? (
         <p className="mt-1 text-[11px] font-semibold tracking-[0.14em] text-ink-500 uppercase">
-          {english}
+          {t(english)}
         </p>
       ) : null}
     </div>

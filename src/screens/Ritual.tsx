@@ -4,7 +4,8 @@ import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/a
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
 import { actions, useDerivedState, type KathaReveal } from "../lib/store";
 import { KATHA_TOTAL } from "../lib/katha";
-import { calendarDateForDevotionalDay, toHindiDigits } from "../lib/date";
+import { useLang, useT } from "../lib/i18n";
+import { calendarDateForDevotionalDay, toNativeDigits } from "../lib/date";
 import { Button } from "../components/ui/Button";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { ShareCardSheet } from "../components/ShareCardSheet";
@@ -56,7 +57,9 @@ export function Ritual({
   onOpenKatha: () => void;
 }) {
   const state = useDerivedState();
-  const verse = useMemo(() => verseOfDay(calendarDateForDevotionalDay()), []);
+  const t = useT();
+  const lang = useLang();
+  const verse = useMemo(() => verseOfDay(calendarDateForDevotionalDay(), lang), [lang]);
   const steps = useMemo(() => buildSteps(verse), [verse]);
 
   const [phase, setPhase] = useState<Phase>("sound");
@@ -179,18 +182,18 @@ export function Ritual({
             🔔
           </span>
           <p className="mt-7 text-[11px] font-bold tracking-[0.2em] text-gold-200 uppercase">
-            आज की पूजा
+            {t("आज की पूजा")}
           </p>
           <h1 className="mt-2 text-[28px] leading-snug font-extrabold text-white">
-            आवाज़ के साथ, या बिना?
+            {t("आवाज़ के साथ, या बिना?")}
           </h1>
           <p className="mt-3 max-w-xs text-[15px] leading-[1.85] text-cream-200">
-            दोनों ही बराबर हैं। जो मन को भाए, वही चुनिए।
+            {t("दोनों ही बराबर हैं। जो मन को भाए, वही चुनिए।")}
           </p>
 
           <div className="mt-9 w-full space-y-3">
             <Button variant="gold" size="xl" block onClick={() => chooseSound(true)}>
-              <span className="text-xl">🔊</span> आवाज़ के साथ
+              <span className="text-xl">🔊</span> {t("आवाज़ के साथ")}
             </Button>
             <Button
               variant="soft"
@@ -199,14 +202,14 @@ export function Ritual({
               className="border-white/25 bg-white/12 text-white"
               onClick={() => chooseSound(false)}
             >
-              <span className="text-xl">🤫</span> बिना आवाज़
+              <span className="text-xl">🤫</span> {t("बिना आवाज़")}
             </Button>
             <button
               type="button"
               onClick={onExit}
               className="pressable mt-2 w-full py-2 text-sm text-cream-300/80"
             >
-              अभी नहीं
+              {t("अभी नहीं")}
             </button>
           </div>
         </div>
@@ -226,15 +229,15 @@ export function Ritual({
             onClick={onExit}
             className="pressable rounded-full bg-white/12 px-4 py-2 text-sm font-semibold text-cream-200 backdrop-blur-sm"
           >
-            बंद करें
+            {t("बंद करें")}
           </button>
           <span className="text-sm text-cream-200">
-            पंक्ति {toHindiDigits(activeIndex + 1)} / {toHindiDigits(steps.length)}
+            {t("पंक्ति")} {toNativeDigits(activeIndex + 1)} / {toNativeDigits(steps.length)}
           </span>
           <button
             type="button"
             onClick={() => setSound((prev) => !prev)}
-            aria-label={sound ? "आवाज़ बंद करें" : "आवाज़ चालू करें"}
+            aria-label={sound ? t("आवाज़ बंद करें") : t("आवाज़ चालू करें")}
             className="pressable grid h-10 w-10 place-items-center rounded-full bg-white/12 text-lg backdrop-blur-sm"
           >
             {sound ? "🔊" : "🔇"}
@@ -298,7 +301,7 @@ export function Ritual({
             <ProgressRing progress={elapsed / RITUAL_MS} size={150} stroke={8}>
               <div className="text-center">
                 <p className="text-4xl font-extrabold text-white tabular-nums">
-                  {toHindiDigits(remainingSeconds)}
+                  {toNativeDigits(remainingSeconds)}
                 </p>
               </div>
             </ProgressRing>
@@ -318,8 +321,8 @@ export function Ritual({
           </div>
 
           <p aria-live="polite" className="sr-only">
-            {activeStep.kind === "chant" ? "जप" : "पंक्ति"} {activeIndex + 1} —{" "}
-            {remainingSeconds} सेकंड बाकी
+            {activeStep.kind === "chant" ? t("जप") : t("पंक्ति")} {activeIndex + 1} —{" "}
+            {remainingSeconds} {t("सेकंड बाकी")}
           </p>
 
           <button
@@ -327,7 +330,7 @@ export function Ritual({
             onClick={finish}
             className="pressable text-sm text-cream-300/85 underline underline-offset-4"
           >
-            मैंने जप पूरा कर लिया
+            {t("मैंने जप पूरा कर लिया")}
           </button>
         </div>
       </div>
@@ -383,31 +386,33 @@ export function Ritual({
             🙏
           </div>
 
-          <h1 className="mt-7 text-4xl font-extrabold text-white">पूजा पूरी!</h1>
-          <p className="mt-2 text-lg text-cream-200">हनुमान जी आपके साथ हैं</p>
+          <h1 className="mt-7 text-4xl font-extrabold text-white">{t("पूजा पूरी!")}</h1>
+          <p className="mt-2 text-lg text-cream-200">{t("हनुमान जी आपके साथ हैं")}</p>
 
           <div className="mt-7 rounded-[28px] border border-gold-300/50 bg-sindoor-800/35 px-8 py-7 backdrop-blur-sm">
-            <p className="text-sm tracking-wide text-cream-300">आपकी लगातार पूजा</p>
+            <p className="text-sm tracking-wide text-cream-300">{t("आपकी लगातार पूजा")}</p>
             <p className="mt-1 text-5xl leading-none font-extrabold text-gold-200">
-              🔥 {toHindiDigits(result?.newStreak ?? state.streak)}
+              🔥 {toNativeDigits(result?.newStreak ?? state.streak)}
             </p>
             <p className="mt-3 text-sm text-cream-200">
-              कुल {toHindiDigits(state.totalCompleted)} पूजा पूर्ण
+              {t("कुल")} {toNativeDigits(state.totalCompleted)} {t("पूजा पूर्ण")}
             </p>
           </div>
 
           {result?.crossedMilestone ? (
             <div className="animate-rise mt-5 rounded-3xl border border-gold-300 bg-gold-200/95 px-6 py-4 text-ink-900 shadow-glow">
               <p className="text-2xl">
-                {result.crossedMilestone === 108 ? "🏅" : "🏵️"} नया बैज!
+                {result.crossedMilestone === 108 ? "🏅" : "🏵️"} {t("नया बैज!")}
               </p>
               <p className="mt-1 text-lg font-bold">
-                {toHindiDigits(result.crossedMilestone)} दिन —{" "}
-                {result.crossedMilestone === 108
-                  ? "परम भक्त"
-                  : result.crossedMilestone === 21
-                    ? "अभ्यासी भक्त"
-                    : "सप्ताही भक्त"}
+                {toNativeDigits(result.crossedMilestone)} {t("दिन")} —{" "}
+                {t(
+                  result.crossedMilestone === 108
+                    ? "परम भक्त"
+                    : result.crossedMilestone === 21
+                      ? "अभ्यासी भक्त"
+                      : "सप्ताही भक्त",
+                )}
               </p>
             </div>
           ) : null}
@@ -416,7 +421,7 @@ export function Ritual({
 
           <div className="mt-8 w-full space-y-3">
             <Button variant="gold" size="xl" block onClick={() => setShareOpen(true)}>
-              <span>साझा करें</span>
+              <span>{t("साझा करें")}</span>
               <span className="text-base font-normal">Share</span>
             </Button>
             <Button
@@ -426,7 +431,7 @@ export function Ritual({
               className="border-white/30 bg-white/15 text-white"
               onClick={onExit}
             >
-              होम पर जाएँ
+              {t("होम पर जाएँ")}
             </Button>
           </div>
         </div>
@@ -462,14 +467,15 @@ function NameStep({
   onSkip: () => void;
   children?: ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
       <span className="animate-floaty grid h-20 w-20 place-items-center rounded-full bg-white/15 text-4xl">
         🙏
       </span>
-      <h1 className="mt-6 text-3xl font-extrabold text-white">पूजा पूरी! 🙏</h1>
+      <h1 className="mt-6 text-3xl font-extrabold text-white">{t("पूजा पूरी! 🙏")}</h1>
       <p className="mt-3 max-w-xs text-[15px] leading-[1.85] text-cream-200">
-        हनुमान जी ने आपका नाम जान लिया। वे हर दिन आपको याद करेंगे।
+        {t("हनुमान जी ने आपका नाम जान लिया। वे हर दिन आपको याद करेंगे।")}
       </p>
 
       <input
@@ -480,16 +486,16 @@ function NameStep({
         onKeyDown={(event) => {
           if (event.key === "Enter" && value.trim()) onNext();
         }}
-        placeholder="आपका नाम"
+        placeholder={t("आपका नाम")}
         className="mt-7 w-full max-w-xs rounded-3xl border-2 border-gold-300/60 bg-white/95 px-5 py-4 text-center text-xl font-bold text-ink-900 placeholder:font-normal placeholder:text-ink-500/50"
       />
 
       <div className="mt-4 w-full max-w-xs space-y-2.5">
         <Button variant="gold" size="lg" block disabled={!value.trim()} onClick={onNext}>
-          सहेजें
+          {t("सहेजें")}
         </Button>
         <button type="button" onClick={onSkip} className="pressable w-full py-2 text-sm text-cream-300/80">
-          रहने दीजिए
+          {t("रहने दीजिए")}
         </button>
       </div>
 
@@ -519,25 +525,26 @@ function OptionalStep({
   onSkip: () => void;
   children?: ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
       <h1 className="text-center text-2xl font-extrabold text-white">
-        एक संकल्प रख लीजिए
+        {t("एक संकल्प रख लीजिए")}
       </h1>
       <p className="mt-2 max-w-xs text-center text-sm leading-[1.85] text-cream-200">
-        यह कोई बात नहीं — पर रोज़ याद आएगा।
+        {t("यह कोई बात नहीं — पर रोज़ याद आएगा।")}
       </p>
 
       <input
         value={sankalp}
         maxLength={140}
         onChange={(event) => onSankalpChange(event.target.value)}
-        placeholder="जैसे: परीक्षा में पास होना"
+        placeholder={t("जैसे: परीक्षा में पास होना")}
         className="mt-6 w-full max-w-xs rounded-3xl border-2 border-gold-300/50 bg-white/95 px-5 py-4 text-lg font-semibold text-ink-900 placeholder:font-normal placeholder:text-ink-500/50"
       />
 
       <p className="mt-6 text-xs font-bold tracking-[0.14em] text-gold-200 uppercase">
-        रोज़ किस समय याद करें?
+        {t("रोज़ किस समय याद करें?")}
       </p>
       <div className="mt-3 flex flex-wrap justify-center gap-2">
         {TIME_PRESETS.map((preset) => (
@@ -559,10 +566,10 @@ function OptionalStep({
 
       <div className="mt-7 w-full max-w-xs space-y-2.5">
         <Button variant="gold" size="lg" block onClick={onNext}>
-          याद दिलाना चालू करें
+          {t("याद दिलाना चालू करें")}
         </Button>
         <button type="button" onClick={onSkip} className="pressable w-full py-2 text-sm text-cream-300/80">
-          बाद में करूँगा
+          {t("बाद में करूँगा")}
         </button>
       </div>
 
@@ -581,23 +588,24 @@ function KathaRevealCard({
   katha: KathaReveal;
   onOpen: () => void;
 }) {
+  const t = useT();
   return (
     <div className="animate-rise mt-6 w-full max-w-xs rounded-3xl border border-gold-300 bg-gold-200/95 px-5 py-4 text-ink-900 shadow-glow">
       <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
-        आज का नया प्रसंग · {toHindiDigits(katha.n)} / {toHindiDigits(KATHA_TOTAL)}
+        {t("आज का नया प्रसंग")} · {toNativeDigits(katha.n)} / {toNativeDigits(KATHA_TOTAL)}
       </p>
       <p className="mt-1 text-xl leading-snug font-extrabold">{katha.title}</p>
       <p className="mt-2 text-sm leading-[1.8] text-ink-700">
         {katha.episode
           ? `${katha.episode.story[0].slice(0, 92)}…`
-          : "यह प्रसंग अभी लिखा जा रहा है।"}
+          : t("यह प्रसंग अभी लिखा जा रहा है।")}
       </p>
       <button
         type="button"
         onClick={onOpen}
         className="mt-3 w-full rounded-2xl bg-white/80 px-4 py-2.5 text-sm font-bold text-saffron-700"
       >
-        📖 पूरा प्रसंग पढ़ें
+        📖 {t("पूरा प्रसंग पढ़ें")}
       </button>
     </div>
   );
