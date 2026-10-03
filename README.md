@@ -69,6 +69,58 @@ npx vercel --prod          # vercel.json पहले से मौजूद ह
 **फ़ोन पर जाँचते समय:** `localhost` से सब ठीक दिखेगा, पर असली अनुभव (संदेश, इंस्टॉल)
 सिर्फ़ https पर मिलेगा।
 
+## Android ऐप — भरोसेमंद संदेश
+
+वेब (PWA) पर ब्राउज़र बंद होने पर JS नहीं चलता, इसलिए संदेश भरोसेमंद नहीं।
+Capacitor से यह PWA एक **असली Android ऐप** बन जाती है, जहाँ संदेश Android के
+AlarmManager पर लगता है — ऐप बंद हो, मारा जाए, फ़ोन रीस्टार्ट हो, फिर भी आएगा।
+यही वो चीज़ है जिससे रोज़ की आदत बनती है।
+
+**बनाने के लिए (एक बार):**
+
+```bash
+npm run cap:sync      # web बिल्ड + android पर कॉपी
+npm run android:run   # फ़ोन/एमुलेटर पर चलाएँ
+# या Android Studio में:
+npm run cap:open
+```
+
+`android/` फ़ोल्डर रिपॉज़ में है, और `android/.gitignore` पहले से `build/`, `.gradle/`,
+`local.properties`, `*.apk` छिपा देता है — यानी आपका SDK path या keystore लीक नहीं होगा।
+
+**जो क्या लगाया गया है:**
+
+| काम | कहाँ |
+| --- | --- |
+| रोज़ नियमित संदेश (`repeats: true`) | `src/lib/reminder.ts` → `scheduleNativeReminder()` |
+| समय बदलने पर पुराना हटकर नया लगना | वही जगह — `cancel()` फिर `schedule()` |
+| संदेश दिखने की इजाज़त (Android 13+) | manifest: `POST_NOTIFICATIONS` |
+| ठीक समय पर पहुँचाने की अनुमति | manifest: `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM` |
+| फ़ोन बंद होने पर संदेश ज़िंदा रहना | manifest: `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK` |
+| Status bar का दीवे वाला आइकन | `android/.../res/drawable/ic_stat_icon.xml` |
+| Exact alarm न मिलने पर ऐप खुद पूछे | सेटिंग में "अनुमति देने के लिए खोलें" बटन |
+
+**वेब और ऐप में फ़र्क:** दोनों का UI एक जैसा है, पर सेटिंग में साफ़ लिखा है कि
+आप किस दुनिया में हैं। PWA पर संदेश भरोसेमंद नहीं — फ़ोन की अलार्म का सुझाव भी वहीं दिया जाता है।
+
+### ⚠️ जो मैंने जाँचा और जो नहीं
+
+**जाँचा हुआ:** TypeScript + ESLint पास, वेब बिल्ड पास, `cap sync` पास (तीनों प्लगिन
+मिले), manifest में 6 अनुमतियाँ मौजूद, और — सबसे ज़रूरी — **वेब ऐप अभी भी ठीक चलता है**
+(पूरा पूजा-प्रवाह दोबारा जाँचा, कोई console error नहीं)।
+
+**जाँचा नहीं हुआ:** इस मशीन पर Java, Android SDK, Gradle और adb — कुछ नहीं है।
+इसलिए मैंने **APK बनाकर फ़ोन पर असली संदेश नहीं देखा**। पहली बार यह ज़रूरी है:
+
+```bash
+# JDK 17 और Android SDK (Studio वाला सबसे आसान) चाहिए
+npm run android:run
+# फिर: सुबह का समय चुनिए → चालू कीजिए → ऐप पूरी तरह बंद कर दीजिए → कल सुबह देखिए
+```
+
+और दो चीज़ें हाथ से जाँचनी होंगी: Android में "Alarms & reminders" की अनुमति,
+और फ़ोन "battery saver" में हो तो भी संदेश ठीक समय आता है या नहीं।
+
 ## तकनीकी · Tech
 
 - React 19 + TypeScript + Vite 7

@@ -1,13 +1,21 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { registerSW } from "virtual:pwa-register";
+import { Capacitor } from "@capacitor/core";
 import App from "./App";
 import "./index.css";
 
-registerSW({ immediate: true });
+async function bootstrap() {
+  // सेवा वर्कर सिर्फ़ वेब पर — Android ऐप में इसकी ज़रूरत नहीं
+  if (!Capacitor.isNativePlatform()) {
+    const { registerSW } = await import("virtual:pwa-register");
+    registerSW({ immediate: true });
+  }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+void bootstrap();

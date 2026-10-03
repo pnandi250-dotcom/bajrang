@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { actions, useDerivedState } from "../lib/store";
 import { formatTime, normalizeTime, toHindiDigits } from "../lib/date";
-import { formatNextReminder, requestPermission, reminderText, sendTestReminder } from "../lib/reminder";
+import {
+  exactAlarmState,
+  formatNextReminder,
+  isNative,
+  isNativeReminderScheduled,
+  openExactAlarmSettings,
+  reminderText,
+  requestPermission,
+  scheduleNativeReminder,
+  sendTestReminder,
+} from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -15,13 +25,33 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const [name, setName] = useState(state.profile.name);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [nativeScheduled, setNativeScheduled] = useState(false);
+  const [exactAlarm, setExactAlarm] = useState<"granted" | "denied" | "unknown">("unknown");
   const caps = capabilities();
+  const native = isNative();
+
+  useEffect(() => {
+    if (!native) return;
+    void isNativeReminderScheduled().then(setNativeScheduled);
+    void exactAlarmState().then(setExactAlarm);
+  }, [native, state.profile.reminderEnabled, state.profile.reminderTime]);
 
   async function toggleNotifications() {
     const next = !state.profile.reminderEnabled;
     if (next) {
       const granted = await requestPermission();
       actions.updateProfile({ reminderEnabled: granted });
+      if (granted && native) {
+        const ok = await scheduleNativeReminder({
+          enabled: true,
+          time: state.profile.reminderTime,
+          name: state.profile.name,
+          doneToday: state.doneToday,
+        });
+        setNativeScheduled(ok);
+        setNotice(ok ? "हर दिन सुबह लग गया — ऐप बंद होने पर भी आएगा।" : "इजाज़त मिली, पर समय नहीं लग सका।");
+        return;
+      }
       setNotice(
         granted
           ? "चालू — रोज़ सुबह संदेश आएगा।"
@@ -32,6 +62,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
       return;
     }
     actions.updateProfile({ reminderEnabled: false });
+    setNativeScheduled(false);
     setNotice("बंद कर दिया।");
   }
 
@@ -94,6 +125,55 @@ export function Settings({ onReset }: { onReset: () => void }) {
           </span>
         </p>
 
+{native ? (
+          <div className="mt-3 space-y-2.5">
+            <div className="flex items-start gap-2 rounded-2xl bg-gold-200/45 px-4 py-3">
+              <span className="text-lg">🔒</span>
+              <p className="text-xs leading-[1.75] text-ink-700">
+                {nativeScheduled ? (
+                  <>
+                    <b>हर दिन लगा हुआ है।</b> ऐप बंद हो, फ़ोन बंद हो, कुछ भी हो — संदेश आ
+                    जाएगा।
+                  </>
+                ) : state.profile.reminderEnabled ? (
+                  <>
+                    <b>चालू है, पर समय नहीं लगा।</b> ऐप एक बार खोलिए, समय दोबारा चुनिए।
+                  </>
+                ) : (
+                  <>ऐप बंद होने पर भी संदेश आएगा — यही Android ऐप की सबसे बड़ी बात है।</>
+                )}
+              </p>
+            </div>
+
+            {exactAlarm === "denied" ? (
+              <div className="rounded-2xl border border-saffron-200 bg-white px-4 py-3">
+                <p className="text-xs leading-[1.75] font-semibold text-ink-900">
+                  Android से ठीक समय पर संदेश देने की अनुमति माँगी ज़रूरी है
+                </p>
+                <p className="mt-1 text-[11px] leading-[1.7] text-ink-500">
+                  बिना इसके फ़ोन संदेश देर से दिखा सकता है।
+                </p>
+                <Button
+                  variant="primary"
+                  size="md"
+                  block
+                  className="mt-2.5"
+                  onClick={async () => {
+                    const asked = await openExactAlarmSettings();
+                    if (!asked) {
+                      setNotice(`Android सेटिंग्स में "Alarms & reminders" खोलिए।`);
+                      return;
+                    }
+                    setExactAlarm(await exactAlarmState());
+                  }}
+                >
+                  अनुमति देने के लिए खोलें
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-3 flex flex-wrap gap-2">
           {TIME_PRESETS.map((preset) => (
             <button
@@ -144,10 +224,20 @@ export function Settings({ onReset }: { onReset: () => void }) {
           )}
         </div>
 
-        <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          ब्राउज़र बंद होने पर यह संदेश नहीं आ पाता। सबसे भरोसेमंद तरीका: फ़ोन की अलार्म में भी{" "}
-          {formatTime(state.profile.reminderTime)} लगा लीजिए। Bajrang को "Add to Home Screen"
-          कर लेने पर यह अधिक बार आता है।
+        <p className="mt-3 rounded-3xl bg-cream-200/70 p-4 text-xs leading-[1.85] text-ink-700">
+          {native ? (
+            <>
+              यह संदेश Android के अलार्म पर लगा है — ऐप बंद होने पर भी आएगा। बस फ़ोन में
+              "Alarms &amp; reminders" से Bajrang को अनुमति दी हो तो ठीक समय आएगा।
+            </>
+          ) : (
+            <>
+              यह PWA संस्करण है। ब्राउज़र बंद होने पर संदेश नहीं आ पाता, इसलिए भरोसेमंद
+              नहीं। <b>Android ऐप</b> में यह हर दिन, ऐप बंद होने पर भी आता है — और वीडियो
+              पर वही नाम, वही संदेश, वही स्ट्रीक चलती है। सबसे भरोसेमंद तरीका अभी भी:
+              फ़ोन की अलार्म में भी {formatTime(state.profile.reminderTime)} लगा लीजिए।
+            </>
+          )}
         </p>
       </Card>
 
