@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { hopeOfDay, verseOfDay } from "../lib/content";
+import { KATHA_TOTAL, plan } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   HINDI_WEEKDAYS,
@@ -20,11 +21,13 @@ export function Home({
   onOpenShare,
   onOpenSankalp,
   onOpenSettings,
+  onOpenKatha,
 }: {
   onStartRitual: () => void;
   onOpenShare: () => void;
   onOpenSankalp: () => void;
   onOpenSettings: () => void;
+  onOpenKatha: () => void;
 }) {
   const state = useDerivedState();
   // "आज" का मतलब पूजा का दिन — रात 3 बजे के बाद का दिन
@@ -36,6 +39,11 @@ export function Home({
   const partOfDay = timeOfDay(today);
   // नए उपयोगकर्ता को "० दिन" न दिखाएँ — यह उम्मीद का ऐप है
   const isNewHere = state.streak === 0 && state.totalCompleted === 0;
+  // कथा का हुक — कल क्या खुलेगा, यह आज से ही बताओ
+  const kathaHook = useMemo(() => kathaTeaser(state.kathaRevealed, state.kathaRead), [
+    state.kathaRevealed,
+    state.kathaRead,
+  ]);
 
   return (
     <div className="safe-top stagger px-5 pt-3 pb-6">
@@ -239,6 +247,31 @@ export function Home({
         )
       ) : null}
 
+      {/* कथा — कल का इंतज़ार बनाने वाली सबसे बड़ी बात */}
+      <button
+        type="button"
+        onClick={onOpenKatha}
+        className="mt-4 block w-full text-left"
+      >
+        <Card className="border-saffron-200 bg-linear-to-b from-cream-200 to-white">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <Eyebrow>बजरंग कथा · {state.kathaRevealed > 0 ? state.kathaRevealed : 0} / {KATHA_TOTAL}</Eyebrow>
+              <p className="mt-1 text-[17px] leading-snug font-extrabold text-ink-900">
+                {kathaHook.title}
+              </p>
+            </div>
+            <span className="animate-floaty shrink-0 rounded-2xl bg-linear-to-b from-saffron-100 to-saffron-200 px-3 py-2 text-2xl">
+              📖
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-[1.85] text-ink-700">{kathaHook.note}</p>
+          <p className="mt-3 text-xs font-bold text-saffron-700">
+            {kathaHook.cta} →
+          </p>
+        </Card>
+      </button>
+
       {/* आज का श्लोक */}
       <Card className="mt-5">
         <Eyebrow>आज का श्लोक · {verse.source}</Eyebrow>
@@ -322,6 +355,39 @@ export function Home({
 /** "3 दिन बीत गए" जैसा वाक्य */
 function toHindiDays(count: number): string {
   return `${toHindiDigits(count)} दिन बीत गए`;
+}
+
+/**
+ * कथा का इशारा — यही वह कारण है जो भक्त को कल फिर लाता है।
+ * पहली पूजा से पहले भी उत्सुकता बननी चाहिए, पूजा के बाद भी अगला प्रसंग दिखना चाहिए।
+ */
+function kathaTeaser(revealed: number, read: number) {
+  const entries = plan();
+  const latest = revealed > 0 ? entries[revealed - 1] : null;
+  const next = entries[revealed] ?? null;
+
+  if (!latest) {
+    return {
+      title: "आज की पूजा के बाद खुलेगा पहला प्रसंग",
+      note: "रोज़ एक प्रसंग, पूजा के बाद — ताकि कथा आगे बढ़ती रहे और आप कल फिर आएँ।",
+      cta: "कथा देखें",
+    };
+  }
+  if (!next) {
+    return {
+      title: "सौ आठ प्रसंग पूरे",
+      note: "आप पूरी कथा सुन चुके हैं। हनुमान जी का साथ सदा के लिए बना रहे।",
+      cta: "कथा दोबारा पढ़ें",
+    };
+  }
+  return {
+    title:
+      read >= revealed
+        ? `पिछला प्रसंग: ${latest.title}`
+        : `नया खुला प्रसंग: ${latest.title}`,
+    note: `कल पूजा के बाद खुलेगा — प्रसंग ${toHindiDigits(next.n)}: ${next.title}।`,
+    cta: "कथा पढ़ें",
+  };
 }
 
 /** समय के हिसाब से नमस्कार — सुबह अलग, शाम अलग */

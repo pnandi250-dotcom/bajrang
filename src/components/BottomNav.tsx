@@ -1,10 +1,11 @@
 import { cn } from "../lib/utils";
 import { haptic } from "../lib/device";
 
-export type Tab = "home" | "calendar" | "sankalp" | "settings";
+export type Tab = "home" | "katha" | "calendar" | "sankalp" | "settings";
 
 const TABS: { id: Tab; icon: string; label: string; english: string }[] = [
   { id: "home", icon: "🙏", label: "आज", english: "Home" },
+  { id: "katha", icon: "📖", label: "कथा", english: "Katha" },
   { id: "calendar", icon: "📅", label: "पंचांग", english: "Calendar" },
   { id: "sankalp", icon: "🪔", label: "संकल्प", english: "Sankalp" },
   { id: "settings", icon: "⚙️", label: "सेटिंग", english: "Settings" },

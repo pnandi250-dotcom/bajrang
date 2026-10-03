@@ -5,6 +5,7 @@ import { scheduleReminder } from "./lib/reminder";
 import { isIOS } from "./lib/device";
 import { Onboarding } from "./screens/Onboarding";
 import { Home } from "./screens/Home";
+import { Katha } from "./screens/Katha";
 import { Ritual } from "./screens/Ritual";
 import { Calendar } from "./screens/Calendar";
 import { Sankalp } from "./screens/Sankalp";
@@ -55,6 +56,11 @@ export default function App() {
           unlockAudio();
           setRitualOpen(false);
         }}
+        onOpenKatha={() => {
+          unlockAudio();
+          setRitualOpen(false);
+          setTab("katha");
+        }}
       />
     );
   }
@@ -80,8 +86,10 @@ export default function App() {
             onOpenShare={() => setShareOpen(true)}
             onOpenSankalp={() => changeTab("sankalp")}
             onOpenSettings={() => changeTab("settings")}
+            onOpenKatha={() => changeTab("katha")}
           />
         ) : null}
+        {tab === "katha" ? <Katha /> : null}
         {tab === "calendar" ? <Calendar /> : null}
         {tab === "sankalp" ? <Sankalp /> : null}
         {tab === "settings" ? (

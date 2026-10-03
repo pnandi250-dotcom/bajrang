@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { KATHA_TOTAL, plan, type PlanEntry } from "./katha";
 import {
   addDays,
   calendarDateForDevotionalDay,
@@ -54,6 +55,10 @@ export type AppState = {
   forgivenUntil: string | null;
   /** रुकते समय का स्ट्रीक, लौटने पर यहीं से आगे बढ़ेगा */
   streakAtPause: number;
+  /** कथा में अब तक खुले प्रसंग — हर पूजा के बाद एक नया */
+  kathaRevealed: number;
+  /** जिस प्रसंग तक पहुँचे (पढ़ा), वह सबसे बड़ा संख्या */
+  kathaRead: number;
 };
 
 /** हर इतने दिन बाद एक क्षमा दिन मिलता है */
@@ -85,6 +90,8 @@ const DEFAULT_STATE: AppState = {
   pausedFrom: null,
   forgivenUntil: null,
   streakAtPause: 0,
+  kathaRevealed: 0,
+  kathaRead: 0,
 };
 
 function sanitize(raw: unknown): AppState {
@@ -118,6 +125,11 @@ function sanitize(raw: unknown): AppState {
   const pausedFrom = dateKey(input.pausedFrom);
   const forgivenUntil = dateKey(input.forgivenUntil);
 
+  const clampKatha = (value: unknown) =>
+    Number.isFinite(value)
+      ? Math.min(KATHA_TOTAL, Math.max(0, Math.floor(value as number)))
+      : 0;
+
   return {
     version: 1,
     profile,
@@ -138,6 +150,8 @@ function sanitize(raw: unknown): AppState {
     streakAtPause: Number.isFinite(input.streakAtPause)
       ? Math.max(0, Math.floor(input.streakAtPause as number))
       : 0,
+    kathaRevealed: clampKatha(input.kathaRevealed),
+    kathaRead: Math.min(clampKatha(input.kathaRevealed), clampKatha(input.kathaRead)),
   };
 }
 
@@ -276,6 +290,13 @@ function streakView(state: AppState, todayKey: string): StreakView {
 
 export type DerivedState = ReturnType<typeof useDerivedState>;
 
+export type KathaReveal = PlanEntry;
+
+/** पूजा के बाद खुलने वाला अगला प्रसंग — कथा पूरी हो गई तो null */
+function revealKatha(): KathaReveal | null {
+  return plan()[state.kathaRevealed] ?? null;
+}
+
 export const actions = {
   completeOnboarding(profile: Partial<Profile>) {
     commit({
@@ -296,6 +317,8 @@ export const actions = {
     usedGrace: boolean;
     earnedGrace: boolean;
     paused: boolean;
+    /** पूजा के बाद खुला नया प्रसंग */
+    katha: KathaReveal | null;
   } {
     const todayKey = devotionalDateKey();
     if (state.lastCompleted === todayKey) {
@@ -306,6 +329,7 @@ export const actions = {
         usedGrace: false,
         earnedGrace: false,
         paused: false,
+        katha: null,
       };
     }
 
@@ -314,10 +338,12 @@ export const actions = {
 
     // विश्राम में पूजा की — बढ़ती नहीं, टूटती भी नहीं। यही आराम का मतलब है।
     if (state.pausedUntil && state.pausedUntil >= todayKey) {
+      const katha = revealKatha();
       commit({
         ...state,
         totalCompleted: state.totalCompleted + 1,
         completedDates: [...state.completedDates, todayKey].slice(-400),
+        kathaRevealed: state.kathaRevealed + (katha ? 1 : 0),
       });
       return {
         newStreak: state.streakAtPause,
@@ -326,6 +352,7 @@ export const actions = {
         usedGrace: false,
         earnedGrace: false,
         paused: true,
+        katha,
       };
     }
 
@@ -349,6 +376,8 @@ export const actions = {
       earnedGrace = true;
     }
 
+    const katha = revealKatha();
+
     commit({
       ...state,
       streak: newStreak,
@@ -361,6 +390,7 @@ export const actions = {
       pausedFrom: null,
       forgivenUntil: null,
       streakAtPause: newStreak,
+      kathaRevealed: state.kathaRevealed + (katha ? 1 : 0),
     });
 
     return {
@@ -370,7 +400,15 @@ export const actions = {
       usedGrace: graceCoversGap,
       earnedGrace,
       paused: false,
+      katha,
     };
+  },
+
+  /** प्रसंग पढ़ लिया — तभी आगे का हिसाब चलता है */
+  markKathaRead(n: number) {
+    const read = Math.min(state.kathaRevealed, Math.max(0, Math.floor(n)));
+    if (read <= state.kathaRead) return;
+    commit({ ...state, kathaRead: read });
   },
 
   /** विश्राम — n दिन के लिए रुकना। स्ट्रीक यहीं ठहर जाती है। */

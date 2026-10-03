@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { verseOfDay } from "../lib/content";
 import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/audio";
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
-import { actions, useDerivedState } from "../lib/store";
+import { actions, useDerivedState, type KathaReveal } from "../lib/store";
+import { KATHA_TOTAL } from "../lib/katha";
 import { calendarDateForDevotionalDay, toHindiDigits } from "../lib/date";
 import { Button } from "../components/ui/Button";
 import { ProgressRing } from "../components/ui/ProgressRing";
@@ -47,7 +48,13 @@ function buildSteps(verse: ReturnType<typeof verseOfDay>): TimedStep[] {
 
 type Phase = "sound" | "prayer" | "done";
 
-export function Ritual({ onExit }: { onExit: () => void }) {
+export function Ritual({
+  onExit,
+  onOpenKatha,
+}: {
+  onExit: () => void;
+  onOpenKatha: () => void;
+}) {
   const state = useDerivedState();
   const verse = useMemo(() => verseOfDay(calendarDateForDevotionalDay()), []);
   const steps = useMemo(() => buildSteps(verse), [verse]);
@@ -58,6 +65,7 @@ export function Ritual({ onExit }: { onExit: () => void }) {
   const [result, setResult] = useState<{
     newStreak: number;
     crossedMilestone: number | null;
+    katha: KathaReveal | null;
   } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [introStage, setIntroStage] = useState<"name" | "optional" | "done" | null>(null);
@@ -106,7 +114,11 @@ export function Ritual({ onExit }: { onExit: () => void }) {
     stopChanting();
     haptic([14, 60, 24]);
     const outcome = actions.completeRitual();
-    setResult({ newStreak: outcome.newStreak, crossedMilestone: outcome.crossedMilestone });
+    setResult({
+      newStreak: outcome.newStreak,
+      crossedMilestone: outcome.crossedMilestone,
+      katha: outcome.katha,
+    });
     setPhase("done");
     setIntroStage(needsName ? "name" : needsOptional ? "optional" : "done");
     window.setTimeout(() => {
@@ -323,6 +335,10 @@ export function Ritual({ onExit }: { onExit: () => void }) {
   }
 
   /* ================= 3. घंटी के बाद ================= */
+  const kathaCard = result?.katha ? (
+    <KathaRevealCard katha={result.katha} onOpen={onOpenKatha} />
+  ) : null;
+
   return (
     <div className="app-shell safe-top safe-bottom relative flex min-h-[100dvh] flex-col overflow-hidden bg-linear-to-b from-saffron-600 via-saffron-500 to-sindoor-700 px-5 text-cream-100">
       <CelebrationHalo showDecorations={introStage === "done"} />
@@ -337,7 +353,9 @@ export function Ritual({ onExit }: { onExit: () => void }) {
             setIntroStage(needsOptional ? "optional" : "done");
           }}
           onSkip={() => setIntroStage(needsOptional ? "optional" : "done")}
-        />
+        >
+          {kathaCard}
+        </NameStep>
       ) : introStage === "optional" ? (
         <OptionalStep
           sankalp={draftSankalp}
@@ -356,7 +374,9 @@ export function Ritual({ onExit }: { onExit: () => void }) {
             actions.updateProfile({ reminderTime: draftTime });
             setIntroStage("done");
           }}
-        />
+        >
+          {kathaCard}
+        </OptionalStep>
       ) : (
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
           <div className="animate-floaty grid h-28 w-28 place-items-center rounded-full bg-white/15 text-6xl shadow-glow backdrop-blur-sm">
@@ -391,6 +411,8 @@ export function Ritual({ onExit }: { onExit: () => void }) {
               </p>
             </div>
           ) : null}
+
+          {kathaCard}
 
           <div className="mt-8 w-full space-y-3">
             <Button variant="gold" size="xl" block onClick={() => setShareOpen(true)}>
@@ -432,11 +454,13 @@ function NameStep({
   onChange,
   onNext,
   onSkip,
+  children,
 }: {
   value: string;
   onChange: (v: string) => void;
   onNext: () => void;
   onSkip: () => void;
+  children?: ReactNode;
 }) {
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
@@ -468,6 +492,8 @@ function NameStep({
           रहने दीजिए
         </button>
       </div>
+
+      {children}
     </div>
   );
 }
@@ -483,6 +509,7 @@ function OptionalStep({
   onTimeChange,
   onNext,
   onSkip,
+  children,
 }: {
   sankalp: string;
   time: string;
@@ -490,6 +517,7 @@ function OptionalStep({
   onTimeChange: (v: string) => void;
   onNext: () => void;
   onSkip: () => void;
+  children?: ReactNode;
 }) {
   return (
     <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
@@ -537,6 +565,40 @@ function OptionalStep({
           बाद में करूँगा
         </button>
       </div>
+
+      {children}
+    </div>
+  );
+}
+
+/**
+ * पूजा के बाद खुला नया प्रसंग — यही वह इंतज़ार है जो भक्त को कल वापस लाता है।
+ */
+function KathaRevealCard({
+  katha,
+  onOpen,
+}: {
+  katha: KathaReveal;
+  onOpen: () => void;
+}) {
+  return (
+    <div className="animate-rise mt-6 w-full max-w-xs rounded-3xl border border-gold-300 bg-gold-200/95 px-5 py-4 text-ink-900 shadow-glow">
+      <p className="text-[11px] font-bold tracking-[0.16em] text-gold-600 uppercase">
+        आज का नया प्रसंग · {toHindiDigits(katha.n)} / {toHindiDigits(KATHA_TOTAL)}
+      </p>
+      <p className="mt-1 text-xl leading-snug font-extrabold">{katha.title}</p>
+      <p className="mt-2 text-sm leading-[1.8] text-ink-700">
+        {katha.episode
+          ? `${katha.episode.story[0].slice(0, 92)}…`
+          : "यह प्रसंग अभी लिखा जा रहा है।"}
+      </p>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-3 w-full rounded-2xl bg-white/80 px-4 py-2.5 text-sm font-bold text-saffron-700"
+      >
+        📖 पूरा प्रसंग पढ़ें
+      </button>
     </div>
   );
 }
