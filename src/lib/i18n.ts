@@ -12,12 +12,14 @@
 
 import { useMemo, useSyncExternalStore } from "react";
 import { BN } from "./bn";
+import { EN } from "./en";
 
-export type Lang = "hi" | "bn";
+export type Lang = "hi" | "bn" | "en";
 
-export const LANGS: { id: Lang; label: string; english: string }[] = [
-  { id: "hi", label: "हिंदी", english: "Hindi" },
-  { id: "bn", label: "বাংলা", english: "Bengali" },
+export const LANGS: { id: Lang; label: string; short: string; english: string }[] = [
+  { id: "hi", label: "हिंदी", short: "हिंदी", english: "Hindi" },
+  { id: "bn", label: "বাংলা", short: "বাংলা", english: "Bengali" },
+  { id: "en", label: "English", short: "EN", english: "English" },
 ];
 
 const STORAGE_KEY = "bajrang.lang.v1";
@@ -25,7 +27,8 @@ const STORAGE_KEY = "bajrang.lang.v1";
 function readLang(): Lang {
   if (typeof window === "undefined") return "hi";
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === "bn" ? "bn" : "hi";
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    return saved === "bn" || saved === "en" ? saved : "hi";
   } catch {
     return "hi";
   }
@@ -74,7 +77,8 @@ export function useT(): Translator {
 
 export function translate(lang: Lang, hindi: string): string {
   if (lang === "hi") return hindi;
-  return BN[hindi] ?? hindi;
+  if (lang === "bn") return BN[hindi] ?? hindi;
+  return EN[hindi] ?? BN[hindi] ?? hindi;
 }
 
 /** बिना React के — फ़ंक्शन और स्क्रिप्ट में (तारीख, त्योहार आदि) */
@@ -102,3 +106,5 @@ export function pick(item: Tr | undefined, lang: Lang = current): string {
   if (lang === "bn" && item.bn) return item.bn;
   return item.hi;
 }
+
+/** हिंदी स्रोत वाक्य के अलावा, दूसरी भाषा में भी वही बात */

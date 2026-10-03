@@ -34,7 +34,7 @@ export function LanguagePicker({
                 : "bg-white/70 text-saffron-700",
             )}
           >
-            {item.label}
+            {item.short}
           </button>
         ))}
       </div>
@@ -43,7 +43,7 @@ export function LanguagePicker({
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {LANGS.map((item) => (
           <button
             key={item.id}
@@ -58,9 +58,11 @@ export function LanguagePicker({
             )}
           >
             <span>{item.label}</span>
-            <span className="ml-1.5 text-[10px] font-semibold tracking-wide uppercase opacity-70">
-              {item.english}
-            </span>
+            {item.english !== item.label ? (
+              <span className="ml-1.5 text-[10px] font-semibold tracking-wide uppercase opacity-70">
+                {item.english}
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -70,7 +72,9 @@ export function LanguagePicker({
       <p className="mt-1 text-xs leading-relaxed text-ink-500">
         {lang === "bn"
           ? t("বাংলায় শ্লোক দেবনাগরিতেই থাকবে")
-          : t("हिंदी में श्लोक उसी मूल रूप में रहते हैं")}
+          : lang === "en"
+            ? t("English screen, but the verses stay in the original Devanagari")
+            : t("हिंदी में श्लोक उसी मूल रूप में रहते हैं")}
       </p>
     </div>
   );

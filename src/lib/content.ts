@@ -1,5 +1,6 @@
 import { getLang, type Lang } from "./i18n";
 import { VERSE_BN, HOPE_BN, SANKALP_BN } from "./contentBn";
+import { VERSE_EN, HOPE_EN, SANKALP_EN } from "./contentEn";
 
 /** भाषा के हिसाब से दिखने वाला श्लोक — पंक्तियाँ मूल देवनागरी में ही रहती हैं */
 export type VerseView = {
@@ -11,13 +12,13 @@ export type VerseView = {
 };
 
 export function verseView(verse: Verse, lang: Lang = getLang()): VerseView {
-  const bn = VERSE_BN[verse.id];
-  const useBn = lang === "bn" && Boolean(bn);
+  const translated = lang === "bn" ? VERSE_BN[verse.id] : VERSE_EN[verse.id];
+  const useTranslated = lang !== "hi" && Boolean(translated);
   return {
     id: verse.id,
-    source: useBn ? bn.source : verse.source,
+    source: useTranslated ? translated.source : verse.source,
     lines: verse.lines,
-    meaning: useBn ? bn.meaning : verse.meaning,
+    meaning: useTranslated ? translated.meaning : verse.meaning,
     chant: verse.chant,
   };
 }
@@ -349,9 +350,9 @@ export function hopeOfDay(date: Date, lang: Lang = getLang()): string {
     (date.getTime() - date.getTimezoneOffset() * 60_000) / 86_400_000,
   );
   const index = Math.abs(key) % HOPE_MESSAGES.length;
-  return lang === "bn"
-    ? (HOPE_BN[index] ?? HOPE_MESSAGES[index])
-    : HOPE_MESSAGES[index];
+  if (lang === "bn") return HOPE_BN[index] ?? HOPE_MESSAGES[index];
+  if (lang === "en") return HOPE_EN[index] ?? HOPE_MESSAGES[index];
+  return HOPE_MESSAGES[index];
 }
 
 /** संकल्प से जुड़ी हर दिन की छोटी प्रेरणा */
@@ -373,6 +374,11 @@ export function sankalpMessageOfDay(
 ): string {
   const key = date.getDate() + date.getMonth() * 31;
   const index = key % SANKALP_MESSAGES.length;
-  const base = lang === "bn" ? (SANKALP_BN[index] ?? SANKALP_MESSAGES[index]) : SANKALP_MESSAGES[index];
+  const base =
+    lang === "bn"
+      ? (SANKALP_BN[index] ?? SANKALP_MESSAGES[index])
+      : lang === "en"
+        ? (SANKALP_EN[index] ?? SANKALP_MESSAGES[index])
+        : SANKALP_MESSAGES[index];
   return sankalp ? `${sankalp} — ${base}` : base;
 }

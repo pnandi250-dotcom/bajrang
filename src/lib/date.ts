@@ -73,6 +73,17 @@ export const BENGALI_WEEKDAYS_SHORT = [
 export const HINDI_DIGITS = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
 export const BENGALI_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
+export const ENGLISH_MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+] as const;
+
+export const ENGLISH_WEEKDAYS = [
+  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+] as const;
+
+export const ENGLISH_WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
 export const MANGALVAR = 2;
 export const SHANIVAR = 6;
 
@@ -151,25 +162,32 @@ export function hanumanDayName(date: Date, lang: Lang = getLang()): string | nul
   return null;
 }
 
-/** 1 -> "१" (हिंदी) या "১" (বাংলा), 2026 -> "२०२६" / "২০২৬" */
+/** 1 -> "१" (हिंदी), "১" (বাংলी) या "1" (English) */
 export function toNativeDigits(value: number | string, lang: Lang = getLang()): string {
+  if (lang === "en") return String(value);
   const digits = lang === "bn" ? BENGALI_DIGITS : HINDI_DIGITS;
   return String(value).replace(/\d/g, (d) => digits[Number(d)]);
 }
 
 /** भाषा के हिसाब से महीने के नाम */
 export function monthNames(lang: Lang = getLang()): readonly string[] {
-  return lang === "bn" ? BENGALI_MONTHS : HINDI_MONTHS;
+  if (lang === "bn") return BENGALI_MONTHS;
+  if (lang === "en") return ENGLISH_MONTHS;
+  return HINDI_MONTHS;
 }
 
 /** भाषा के हिसाब से पूरे दिन के नाम */
 export function weekdayNames(lang: Lang = getLang()): readonly string[] {
-  return lang === "bn" ? BENGALI_WEEKDAYS : HINDI_WEEKDAYS;
+  if (lang === "bn") return BENGALI_WEEKDAYS;
+  if (lang === "en") return ENGLISH_WEEKDAYS;
+  return HINDI_WEEKDAYS;
 }
 
 /** भाषा के हिसाब से दिन के छोटे नाम */
 export function weekdayShort(lang: Lang = getLang()): readonly string[] {
-  return lang === "bn" ? BENGALI_WEEKDAYS_SHORT : HINDI_WEEKDAYS_SHORT;
+  if (lang === "bn") return BENGALI_WEEKDAYS_SHORT;
+  if (lang === "en") return ENGLISH_WEEKDAYS_SHORT;
+  return HINDI_WEEKDAYS_SHORT;
 }
 
 export function formatDate(date: Date, lang: Lang = getLang()): string {
@@ -182,6 +200,12 @@ export function formatFullDate(date: Date, lang: Lang = getLang()): string {
 
 export function formatTime(time: string, lang: Lang = getLang()): string {
   const [hRaw, mRaw] = time.split(":");
+  if (lang === "en") {
+    const h = Number(hRaw);
+    const ampm = h < 12 ? "am" : "pm";
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    return `${toNativeDigits(hour12, lang)}:${mRaw} ${ampm}`;
+  }
   const h = Number(hRaw);
   const suffix =
     lang === "bn"

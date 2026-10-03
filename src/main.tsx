@@ -12,7 +12,7 @@ async function bootstrap() {
     registerSW({ immediate: true });
   }
 
-  document.documentElement.lang = getLang() === "bn" ? "bn" : "hi";
+  document.documentElement.lang = getLang();
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

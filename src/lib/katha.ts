@@ -1,4 +1,5 @@
 import { EPISODE_BN } from "./kathaBn";
+import { EPISODE_EN } from "./kathaEn";
 import { getLang, type Lang } from "./i18n";
 
 /*
@@ -576,14 +577,14 @@ export function plan(lang: Lang = getLang()): PlanEntry[] {
 function localize(episode: KathaEpisode | null, lang: Lang): KathaEpisode | null {
   if (!episode) return null;
   if (lang === "hi") return episode;
-  const bn = EPISODE_BN[episode.n];
-  if (!bn) return episode;
+  const translated = lang === "bn" ? EPISODE_BN[episode.n] : EPISODE_EN[episode.n];
+  if (!translated) return episode;
   return {
     ...episode,
-    title: bn.title,
-    story: bn.story,
-    lesson: bn.lesson,
-    note: bn.note ?? episode.note,
+    title: translated.title,
+    story: translated.story,
+    lesson: translated.lesson,
+    note: translated.note ?? episode.note,
   };
 }
 
