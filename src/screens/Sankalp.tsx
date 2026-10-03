@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDerivedState, actions, MILESTONES } from "../lib/store";
 import { sankalpMessageOfDay } from "../lib/content";
-import { toHindiDigits } from "../lib/date";
+import { calendarDateForDevotionalDay, toHindiDigits } from "../lib/date";
 import { Card, SectionTitle, Eyebrow } from "../components/ui/Card";
 import { Diya } from "../components/ui/Diya";
 import { MilestoneBadges } from "../components/ui/MilestoneBadges";
@@ -20,7 +20,7 @@ export function Sankalp() {
   const state = useDerivedState();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(state.profile.sankalp);
-  const today = new Date();
+  const today = calendarDateForDevotionalDay();
 
   const intensity = Math.min(1, state.streak / 21);
   const message = sankalpMessageOfDay(today, state.profile.sankalp);

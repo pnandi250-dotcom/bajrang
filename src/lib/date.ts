@@ -38,12 +38,41 @@ export const HINDI_DIGITS = ["०", "१", "२", "३", "४", "५", "६", "�
 export const MANGALVAR = 2;
 export const SHANIVAR = 6;
 
+/**
+ * दिन की शुरुआत 3:00 बजे से।
+ *
+ * पूजा तड़के 2 बजे होती है — वह "कल" की पूजा है, आज की नहीं। इसलिए हर गिनती
+ * इसी हिसाब से चलती है, वरना जो भक्त रात जागकर पूजा करता है उसका दिन गिना ही नहीं
+ * जाता। यही परंपरा भी है — तिथि का दिन सूर्योदय से शुरू होता है।
+ */
+export const DAY_BOUNDARY_HOUR = 3;
+
+/** पूजा के हिसाब से "आज कौन सा दिन है" — YYYY-MM-DD */
+export function devotionalDateKey(now: Date = new Date()): string {
+  return toDateKey(
+    new Date(now.getTime() - DAY_BOUNDARY_HOUR * 60 * 60 * 1000),
+  );
+}
+
+/** पूजा-दिन के हिसाब से कितने सेकंड बचे (कभी 0 से नीचे नहीं) */
+export function secondsIntoDevotionalDay(now: Date = new Date()): number {
+  const start = new Date(now);
+  start.setHours(DAY_BOUNDARY_HOUR, 0, 0, 0);
+  if (start > now) start.setDate(start.getDate() - 1);
+  return Math.floor((now.getTime() - start.getTime()) / 1000);
+}
+
 /** Local-timezone YYYY-MM-DD key. Never use toISOString() here — it shifts days. */
 export function toDateKey(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
+}
+
+/** पूजा-दिन के मुकाबले असली दिन कौन सा (दिन की सीमा पार करने पर बदलता है) */
+export function calendarDateForDevotionalDay(now: Date = new Date()): Date {
+  return fromDateKey(devotionalDateKey(now));
 }
 
 export function fromDateKey(key: string): Date {

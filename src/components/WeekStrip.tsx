@@ -1,6 +1,7 @@
 import {
   HINDI_WEEKDAYS_SHORT,
   addDays,
+  calendarDateForDevotionalDay,
   hanumanDayName,
   toDateKey,
 } from "../lib/date";
@@ -11,7 +12,8 @@ import { cn } from "../lib/utils";
 export function WeekStrip() {
   const state = useDerivedState();
   const completed = new Set(state.completedDates);
-  const today = new Date();
+  // पूजा का दिन — रात 3 बजे के बाद यह कल हो जाता है
+  const today = calendarDateForDevotionalDay();
 
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(today, index - 6);

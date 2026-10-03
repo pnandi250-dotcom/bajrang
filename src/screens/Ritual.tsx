@@ -3,7 +3,7 @@ import { verseOfDay } from "../lib/content";
 import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/audio";
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
 import { actions, useDerivedState } from "../lib/store";
-import { toHindiDigits } from "../lib/date";
+import { calendarDateForDevotionalDay, toHindiDigits } from "../lib/date";
 import { Button } from "../components/ui/Button";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { ShareCardSheet } from "../components/ShareCardSheet";
@@ -49,7 +49,7 @@ type Phase = "sound" | "prayer" | "done";
 
 export function Ritual({ onExit }: { onExit: () => void }) {
   const state = useDerivedState();
-  const verse = useMemo(() => verseOfDay(new Date()), []);
+  const verse = useMemo(() => verseOfDay(calendarDateForDevotionalDay()), []);
   const steps = useMemo(() => buildSteps(verse), [verse]);
 
   const [phase, setPhase] = useState<Phase>("sound");

@@ -3,6 +3,8 @@ import { useDerivedState } from "../lib/store";
 import { loadFestivals, nextFestival, saveFestivals } from "../lib/festivals";
 import {
   HINDI_MONTHS,
+  calendarDateForDevotionalDay,
+  devotionalDateKey,
   HINDI_WEEKDAYS,
   MANGALVAR,
   SHANIVAR,
@@ -16,7 +18,7 @@ import { cn } from "../lib/utils";
 export function Calendar() {
   const state = useDerivedState();
   const [month, setMonth] = useState(() => {
-    const now = new Date();
+    const now = calendarDateForDevotionalDay();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [festivals, setFestivals] = useState(loadFestivals);
@@ -36,7 +38,7 @@ export function Calendar() {
     saveFestivals(next);
   }
 
-  const today = new Date();
+  const today = calendarDateForDevotionalDay();
   const isCurrentMonth =
     month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth();
 
@@ -244,7 +246,8 @@ function buildMonth(month: Date, completed: string[], festivals: { date: string;
   const monthIndex = month.getMonth();
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const todayKey = toDateKey(new Date());
+  // पूजा का दिन — रात 3 बजे के बाद यह कल हो जाता है
+  const todayKey = devotionalDateKey();
 
   const cells: Cell[] = [];
   for (let i = 0; i < firstDay; i += 1) {

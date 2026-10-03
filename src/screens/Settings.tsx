@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
-import { actions, useDerivedState } from "../lib/store";
-import { formatTime, normalizeTime, toHindiDigits } from "../lib/date";
+import { actions, useDerivedState, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
+import {
+  DAY_BOUNDARY_HOUR,
+  calendarDateForDevotionalDay,
+  formatFullHindiDate,
+  formatTime,
+  normalizeTime,
+  toHindiDigits,
+} from "../lib/date";
 import {
   exactAlarmState,
   formatNextReminder,
@@ -238,6 +245,97 @@ export function Settings({ onReset }: { onReset: () => void }) {
               फ़ोन की अलार्म में भी {formatTime(state.profile.reminderTime)} लगा लीजिए।
             </>
           )}
+        </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="विश्राम" english="Pause" />
+        <p className="text-sm leading-[1.85] text-ink-500">
+          कभी-कभी बीमारी, यात्रा, या कोई मजबूरी होती है। ऐसे समय में डाँटने की बजाय रुक
+          लीजिए — आपकी साधना जहाँ थी वहीं जुकी रहेगी। रुके हुए दिन छूटे नहीं गिने जाएँगे।
+        </p>
+
+        {state.isPaused ? (
+          <div className="mt-4 rounded-3xl border border-saffron-200 bg-cream-200/70 p-4">
+            <p className="text-base font-bold text-ink-900">
+              🛌 विश्राम जारी है
+            </p>
+            <p className="mt-1.5 text-sm leading-[1.8] text-ink-700">
+              {state.pauseDaysLeft > 0
+                ? `${toHindiDigits(state.pauseDaysLeft)} दिन और। सिलसिला ${toHindiDigits(state.streak)} दिन पर जुका हुआ है।`
+                : "आज अंतिम दिन है।"}
+            </p>
+            <Button
+              variant="primary"
+              size="lg"
+              block
+              className="mt-3"
+              onClick={() => {
+                actions.resumeFromPause();
+                setNotice("विश्राम समाप्त। फिर शुरू करें 🙏");
+              }}
+            >
+              अभी लौटें
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {[1, 3, 7, 14].map((days) => (
+              <Button
+                key={days}
+                variant="soft"
+                size="md"
+                onClick={() => {
+                  actions.pauseFor(days);
+                  setNotice(`${toHindiDigits(days)} दिन का विश्राम। आराम करिए।`);
+                }}
+              >
+                🛌 {toHindiDigits(days)} दिन
+              </Button>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="क्षमा दिन" english="Grace days" />
+        <div className="flex items-center gap-2">
+          {Array.from({ length: GRACE_MAX }, (_, index) => (
+            <span
+              key={index}
+              className={
+                index < state.graceDays
+                  ? "grid h-11 w-11 place-items-center rounded-2xl bg-gold-200 text-lg"
+                  : "grid h-11 w-11 place-items-center rounded-2xl border border-dashed border-saffron-300 text-lg text-transparent"
+              }
+            >
+              🕊️
+            </span>
+          ))}
+          <p className="ml-1 text-sm font-bold text-ink-700">
+            {toHindiDigits(state.graceDays)} / {toHindiDigits(GRACE_MAX)} बाकी
+          </p>
+        </div>
+        <p className="mt-3 text-xs leading-[1.85] text-ink-500">
+          हर {toHindiDigits(GRACE_EVERY_DAYS)} दिन लगातार पूजा करने पर एक क्षमा दिन अपने आप
+          मिलता है। दिन छूट जाए तो यह अपने आप लग जाती है — इसलिए बार-बार सिलसिला नहीं टूटता।
+        </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="दिन की शुरुआत" english="Day boundary" />
+        <p className="text-sm leading-[1.85] text-ink-700">
+          दिन <b>रात 3:00 बजे</b> से शुरू होता है। रात 2 बजे की पूजा पहले दिन की गिनी जाती
+          है — जैसे परंपरा में भी तिथि सूर्योदय से चलती है।
+        </p>
+        <p className="mt-2 text-xs leading-[1.75] text-ink-500">
+          अभी पूजा का दिन है:{" "}
+          <span className="font-semibold text-saffron-700">
+            {formatFullHindiDate(calendarDateForDevotionalDay())}
+          </span>
+          {new Date().getHours() < DAY_BOUNDARY_HOUR
+            ? ` — घड़ी के हिसाब से ${formatFullHindiDate(new Date())} की रात है, पर पूजा का दिन पिछला ही चल रहा है।`
+            : ""}
         </p>
       </Card>
 

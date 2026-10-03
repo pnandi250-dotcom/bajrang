@@ -1,5 +1,18 @@
 import { useSyncExternalStore } from "react";
-import { addDays, daysBetween, toDateKey } from "./date";
+import {
+  addDays,
+  calendarDateForDevotionalDay,
+  daysBetween,
+  devotionalDateKey,
+  fromDateKey,
+  isHanumanDay,
+  toDateKey,
+} from "./date";
+
+/** पूजा-कल — दिन की शुरुआत 3:00 बजे है, इसलिए कल भी उसी हिसाब से गिना जाएगा */
+function devotionalYesterday(): string {
+  return toDateKey(addDays(calendarDateForDevotionalDay(), -1));
+}
 
 export type Language = "hi" | "en";
 
@@ -25,7 +38,28 @@ export type AppState = {
   totalCompleted: number;
   /** YYYY-MM-DD keys, capped at the most recent 400 days. */
   completedDates: string[];
+  /**
+   * क्षमा — छूटे दिन की माफ़ी। हर 7 दिन की साधना पर 1 मिलती है (ज़्यादा से ज़्यादा 2)।
+   * दिन छूटने पर अपने आप लगती है, ताकि सिलसिला टूटे नहीं।
+   */
+  graceDays: number;
+  /** विश्राम — YYYY-MM-DD, जिस दिन तक रुकना है (null = जारी है) */
+  pausedUntil: string | null;
+  /** विश्राम किस दिन से शुरू हुआ — माफ़ी सिर्फ़ इसी अवधि की है */
+  pausedFrom: string | null;
+  /**
+   * विश्राम के दिन क्षमा में गिने जाते हैं — यह उनकी अंतिम तारीख है।
+   * विश्राम ख़त्म होने पर भी यह बनी रहती है, ताकि लौटने पर सिलसिला वहीं से चले।
+   */
+  forgivenUntil: string | null;
+  /** रुकते समय का स्ट्रीक, लौटने पर यहीं से आगे बढ़ेगा */
+  streakAtPause: number;
 };
+
+/** हर इतने दिन बाद एक क्षमा दिन मिलता है */
+export const GRACE_EVERY_DAYS = 7;
+/** एक साथ जितनी क्षमा रख सकते हैं */
+export const GRACE_MAX = 2;
 
 const STORAGE_KEY = "bajrang.state.v1";
 
@@ -46,6 +80,11 @@ const DEFAULT_STATE: AppState = {
   lastCompleted: null,
   totalCompleted: 0,
   completedDates: [],
+  graceDays: 0,
+  pausedUntil: null,
+  pausedFrom: null,
+  forgivenUntil: null,
+  streakAtPause: 0,
 };
 
 function sanitize(raw: unknown): AppState {
@@ -68,6 +107,17 @@ function sanitize(raw: unknown): AppState {
       ? input.lastCompleted
       : (completedDates.at(-1) ?? null);
 
+  const graceDays = Number.isFinite(input.graceDays)
+    ? Math.min(GRACE_MAX, Math.max(0, Math.floor(input.graceDays as number)))
+    : 0;
+
+  const dateKey = (value: unknown): string | null =>
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+
+  const pausedUntil = dateKey(input.pausedUntil);
+  const pausedFrom = dateKey(input.pausedFrom);
+  const forgivenUntil = dateKey(input.forgivenUntil);
+
   return {
     version: 1,
     profile,
@@ -81,6 +131,13 @@ function sanitize(raw: unknown): AppState {
       completedDates.length,
     ),
     completedDates: completedDates.slice(-400),
+    graceDays,
+    pausedUntil,
+    pausedFrom,
+    forgivenUntil,
+    streakAtPause: Number.isFinite(input.streakAtPause)
+      ? Math.max(0, Math.floor(input.streakAtPause as number))
+      : 0,
   };
 }
 
@@ -124,26 +181,96 @@ export function useAppState(): AppState {
 export function useDerivedState() {
   const raw = useAppState();
 
-  const todayKey = toDateKey(new Date());
-  const doneToday = raw.lastCompleted === todayKey;
-  const yesterdayKey = toDateKey(addDays(new Date(), -1));
-
-  const missedDays =
-    raw.lastCompleted && !doneToday ? Math.max(0, daysBetween(raw.lastCompleted, todayKey) - 1) : 0;
-
-  // A chain is alive only if the last completion was today or yesterday.
-  const streakAlive = Boolean(raw.lastCompleted && (doneToday || raw.lastCompleted === yesterdayKey));
-  const streak = doneToday ? raw.streak : streakAlive ? raw.streak : 0;
+  // पूजा का दिन 3:00 बजे से शुरू होता है
+  const view = streakView(raw, devotionalDateKey());
 
   return {
     ...raw,
-    doneToday,
-    streak,
-    streakAlive,
-    missedDays,
-    bestStreak: Math.max(raw.bestStreak, streak),
+    ...view,
+    bestStreak: Math.max(raw.bestStreak, view.streak, raw.streakAtPause),
+    isSpecialDay: isHanumanDay(fromDateKey(view.todayKey)),
+  };
+}
+
+/**
+ * विश्राम की माफ़ी — जो दिन विश्राम की अवधि में बीत गए, वे छूटे नहीं गिने जाते।
+ * माफ़ी सिर्फ़ इतनी ही है जितनी विश्राम थी, और उतनी ही जब तक पूजा फिर से शुरू न हो।
+ */
+function forgivenInGap(
+  pausedFrom: string | null,
+  forgivenUntil: string | null,
+  lastCompleted: string | null,
+  gapDays: number,
+): number {
+  if (!lastCompleted || !forgivenUntil) return 0;
+  if (forgivenUntil <= lastCompleted) return 0;
+  if (pausedFrom && pausedFrom > forgivenUntil) return 0;
+  return Math.min(Math.max(0, daysBetween(lastCompleted, forgivenUntil)), gapDays);
+}
+
+type StreakView = {
+  todayKey: string;
+  doneToday: boolean;
+  /** पिछली पूजा के बाद के सारे छूटे दिन (आज शामिल नहीं) */
+  gapDays: number;
+  /** उनमें से विश्राम के दिन */
+  forgivenDays: number;
+  /** असली छूट — यही स्क्रीन पर दिखता है */
+  missedDays: number;
+  graceWillCover: number;
+  willRecoverWithGrace: boolean;
+  streakAlive: boolean;
+  streak: number;
+  isPaused: boolean;
+  pauseDaysLeft: number;
+};
+
+/** स्ट्रीक का पूरा हिसाब — यही स्क्रीन दिखाती है और विश्राम भी यहीं से जुकता है */
+function streakView(state: AppState, todayKey: string): StreakView {
+  const doneToday = state.lastCompleted === todayKey;
+  const gapDays =
+    state.lastCompleted && !doneToday
+      ? Math.max(0, daysBetween(state.lastCompleted, todayKey) - 1)
+      : 0;
+  const forgivenDays = forgivenInGap(
+    state.pausedFrom,
+    state.forgivenUntil,
+    state.lastCompleted,
+    gapDays,
+  );
+  const missedDays = Math.max(0, gapDays - forgivenDays);
+
+  // क्षमा दिनों से छूट ढक जाए तो सिलसिला ज़िंदा ही माना जाएगा
+  const graceWillCover = Math.min(missedDays, state.graceDays);
+  const willRecoverWithGrace = missedDays > 0 && graceWillCover === missedDays;
+  const streakAlive = Boolean(
+    state.lastCompleted && (doneToday || missedDays === 0 || willRecoverWithGrace),
+  );
+
+  // विश्राम जारी है? आखिरी तारीख आज या आगे हो तो हाँ
+  const isPaused = Boolean(state.pausedUntil && state.pausedUntil >= todayKey);
+
+  return {
     todayKey,
-    isSpecialDay: new Date().getDay() === 2 || new Date().getDay() === 6,
+    doneToday,
+    gapDays,
+    forgivenDays,
+    missedDays,
+    graceWillCover,
+    willRecoverWithGrace,
+    streakAlive,
+    // विश्राम में स्ट्रीक जहाँ थी वहीं ठहरी हुई है — यही उसकी दीवा है
+    streak: isPaused
+      ? state.streakAtPause
+      : doneToday
+        ? state.streak
+        : streakAlive
+          ? state.streak
+          : 0,
+    isPaused,
+    pauseDaysLeft: isPaused
+      ? Math.max(0, daysBetween(todayKey, state.pausedUntil as string))
+      : 0,
   };
 }
 
@@ -162,16 +289,65 @@ export const actions = {
   },
 
   /** Called when the 60-second ritual finishes. */
-  completeRitual(): { newStreak: number; isNewBest: boolean; crossedMilestone: number | null } {
-    const todayKey = toDateKey(new Date());
+  completeRitual(): {
+    newStreak: number;
+    isNewBest: boolean;
+    crossedMilestone: number | null;
+    usedGrace: boolean;
+    earnedGrace: boolean;
+    paused: boolean;
+  } {
+    const todayKey = devotionalDateKey();
     if (state.lastCompleted === todayKey) {
-      return { newStreak: state.streak, isNewBest: false, crossedMilestone: null };
+      return {
+        newStreak: state.streak,
+        isNewBest: false,
+        crossedMilestone: null,
+        usedGrace: false,
+        earnedGrace: false,
+        paused: false,
+      };
     }
 
-    const yesterdayKey = toDateKey(addDays(new Date(), -1));
-    const continued = state.lastCompleted === yesterdayKey;
-    const newStreak = continued ? state.streak + 1 : 1;
+    const yesterdayKey = devotionalYesterday();
     const previousBest = Math.max(state.bestStreak, state.streak);
+
+    // विश्राम में पूजा की — बढ़ती नहीं, टूटती भी नहीं। यही आराम का मतलब है।
+    if (state.pausedUntil && state.pausedUntil >= todayKey) {
+      commit({
+        ...state,
+        totalCompleted: state.totalCompleted + 1,
+        completedDates: [...state.completedDates, todayKey].slice(-400),
+      });
+      return {
+        newStreak: state.streakAtPause,
+        isNewBest: false,
+        crossedMilestone: null,
+        usedGrace: false,
+        earnedGrace: false,
+        paused: true,
+      };
+    }
+
+    // पिछली पूजा के बाद छूटे दिन — विश्राम के दिन पहले ही माफ़ हो चुके हैं
+    const view = streakView(state, todayKey);
+    const continued =
+      Boolean(state.lastCompleted) &&
+      (state.lastCompleted === yesterdayKey || view.missedDays === 0);
+
+    // दिन छूट गए — क्षमा दिनों से सब ढकने चाहिए, वरना सिलसिला टूट जाए
+    const graceCoversGap = view.missedDays > 0 && state.graceDays >= view.missedDays;
+    const graceUsed = graceCoversGap ? view.missedDays : 0;
+    let graceLeft = state.graceDays - graceUsed;
+
+    const newStreak = continued || graceCoversGap ? state.streak + 1 : 1;
+
+    // हर 7 दिन पर एक क्षमा कमाओ (ज़्यादा से ज़्यादा 2 साथ में)
+    let earnedGrace = false;
+    if (newStreak > 0 && newStreak % GRACE_EVERY_DAYS === 0 && graceLeft < GRACE_MAX) {
+      graceLeft += 1;
+      earnedGrace = true;
+    }
 
     commit({
       ...state,
@@ -180,18 +356,52 @@ export const actions = {
       lastCompleted: todayKey,
       totalCompleted: state.totalCompleted + 1,
       completedDates: [...state.completedDates, todayKey].slice(-400),
+      graceDays: graceLeft,
+      pausedUntil: null,
+      pausedFrom: null,
+      forgivenUntil: null,
+      streakAtPause: newStreak,
     });
 
     return {
       newStreak,
       isNewBest: newStreak > previousBest,
       crossedMilestone: findMilestone(previousBest, newStreak),
+      usedGrace: graceCoversGap,
+      earnedGrace,
+      paused: false,
     };
+  },
+
+  /** विश्राम — n दिन के लिए रुकना। स्ट्रीक यहीं ठहर जाती है। */
+  pauseFor(days: number) {
+    const clamped = Math.max(1, Math.min(30, Math.floor(days)));
+    const from = devotionalDateKey();
+    const until = toDateKey(addDays(fromDateKey(from), clamped - 1));
+    // जो स्ट्रीक अभी स्क्रीन पर दिख रही है, वही जुकती है — टूटी हुई साधना नहीं
+    const frozen = streakView(state, from).streak;
+    commit({
+      ...state,
+      streak: frozen,
+      streakAtPause: frozen,
+      pausedFrom: from,
+      forgivenUntil: until,
+      pausedUntil: until,
+    });
+  },
+
+  /** विश्राम ख़त्म — सिलसिला वहीं से आगे बढ़ेगा, रुके हुए दिन माफ़ रहेंगे */
+  resumeFromPause() {
+    if (!state.pausedUntil) return;
+    const todayKey = devotionalDateKey();
+    // जल्दी लौटे तो सिर्फ़ बीत चुके दिन माफ़ — आगे के दिन नहीं
+    const forgivenUntil = state.pausedUntil < todayKey ? state.pausedUntil : todayKey;
+    commit({ ...state, pausedUntil: null, forgivenUntil });
   },
 
   /** Devotional apps should always offer a way back — used by Settings. */
   resetAll() {
-    commit({ ...DEFAULT_STATE, profile: { ...DEFAULT_STATE.profile, createdAt: toDateKey(new Date()) } });
+    commit({ ...DEFAULT_STATE, profile: { ...state.profile, createdAt: toDateKey(new Date()), onboarded: true } });
   },
 };
 

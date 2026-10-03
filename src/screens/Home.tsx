@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { hopeOfDay, verseOfDay } from "../lib/content";
-import { useDerivedState } from "../lib/store";
+import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   HINDI_WEEKDAYS,
   addDays,
+  calendarDateForDevotionalDay,
   formatHindiDate,
   formatFullHindiDate,
   hanumanDayName,
@@ -26,7 +27,8 @@ export function Home({
   onOpenSettings: () => void;
 }) {
   const state = useDerivedState();
-  const today = useMemo(() => new Date(), []);
+  // "आज" का मतलब पूजा का दिन — रात 3 बजे के बाद का दिन
+  const today = useMemo(() => calendarDateForDevotionalDay(), []);
   const verse = useMemo(() => verseOfDay(today), [today]);
   const hope = useMemo(() => hopeOfDay(today), [today]);
   const specialDay = hanumanDayName(today);
@@ -46,6 +48,16 @@ export function Home({
                 🪔
               </span>
               <span className="text-sm font-bold text-ink-700">नया शुरुआत</span>
+            </>
+          ) : state.isPaused ? (
+            <>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-cream-200 to-cream-300 text-base">
+                🛌
+              </span>
+              <span className="text-lg font-extrabold text-ink-900 tabular-nums">
+                {toHindiDigits(state.streak)}
+              </span>
+              <span className="text-sm font-semibold text-ink-500">विश्राम</span>
             </>
           ) : (
             <>
@@ -172,15 +184,59 @@ export function Home({
         </Card>
       ) : null}
 
-      {/* चिंता मत करो */}
-      {state.missedDays > 0 && !state.doneToday ? (
-        <Card className="mt-5 border-gold-300/70 bg-gold-200/35">
-          <p className="text-lg font-bold text-ink-900">चिंता मत करो, फिर से शुरू करो 🙏</p>
+      {/* क्षमा और विश्राम — दोनों ही दिल जीतने वाली बातें */}
+      {state.isPaused ? (
+        <Card className="mt-5 border-saffron-200 bg-linear-to-b from-cream-200 to-white">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🛌</span>
+            <p className="text-lg font-extrabold text-ink-900">विश्राम जारी है</p>
+          </div>
           <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-            {toHindiDigits(state.missedDays)} दिन बीत गए — कोई बात नहीं। हनुमान जी आज भी आपके
-            साथ हैं। एक मिनट से ही सब शुरू हो जाता है।
+            {state.pauseDaysLeft > 0 ? (
+              <>
+                <b>{toHindiDigits(state.pauseDaysLeft)} दिन</b> और आराम। आपकी{" "}
+                {toHindiDigits(state.streak)} दिन की साधना जहाँ थी वहीं सुरक्षित है — रुके
+                हुए दिन छूटे नहीं गिने जाएँगे। जब मन करे, पूजा कीजिए।
+              </>
+            ) : (
+              <>आज विश्राम का अंतिम दिन है। कल फिर सिलसिला यहीं से आगे बढ़ेगा।</>
+            )}
           </p>
+          <Button
+            variant="primary"
+            size="lg"
+            block
+            className="mt-4"
+            onClick={() => actions.resumeFromPause()}
+          >
+            आज से फिर शुरू करें
+          </Button>
         </Card>
+      ) : null}
+
+      {/* छूटे दिन — क्षमा बचा लेगी या नहीं, पहले बता दें */}
+      {!state.isPaused && state.missedDays > 0 && !state.doneToday ? (
+        state.willRecoverWithGrace ? (
+          <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/70 to-white">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🕊️</span>
+              <p className="text-lg font-extrabold text-ink-900">क्षमा बचा लेगी</p>
+            </div>
+            <p className="mt-2 text-sm leading-[1.85] text-ink-700">
+              {toHindiDigits(state.missedDays)} दिन छूट गए हैं, पर आपके पास{" "}
+              <b>{toHindiDigits(state.graceDays)} क्षमा दिन</b> हैं। आज पूजा कीजिए — सिलसिला
+              टूटेगा नहीं। कोई डाँट नहीं, बस ध्यान रखिए।
+            </p>
+          </Card>
+        ) : (
+          <Card className="mt-5 border-gold-300/70 bg-gold-200/35">
+            <p className="text-lg font-bold text-ink-900">चिंता मत करो, फिर से शुरू करो 🙏</p>
+            <p className="mt-2 text-sm leading-[1.85] text-ink-700">
+              {toHindiDays(state.missedDays)} — कोई बात नहीं। हनुमान जी आज भी आपके साथ हैं।
+              एक मिनट से ही सब शुरू हो जाता है।
+            </p>
+          </Card>
+        )
       ) : null}
 
       {/* आज का श्लोक */}
@@ -227,6 +283,30 @@ export function Home({
           <Stat label="कुल पूजा" value={state.totalCompleted} />
           <Stat label="सर्वश्रेष्ठ" value={state.bestStreak} />
         </div>
+
+        <div className="mt-4 flex items-center justify-between rounded-2xl bg-cream-200/70 px-4 py-3">
+          <span className="flex items-center gap-2 text-sm font-semibold text-ink-700">
+            <span className="text-base">🕊️</span> क्षमा दिन बाकी
+          </span>
+          <span className="flex gap-1.5">
+            {Array.from({ length: GRACE_MAX }, (_, index) => (
+              <span
+                key={index}
+                className={
+                  index < state.graceDays
+                    ? "grid h-7 w-7 place-items-center rounded-full bg-gold-300 text-sm"
+                    : "grid h-7 w-7 place-items-center rounded-full border border-dashed border-saffron-300 text-transparent"
+                }
+              >
+                🕊️
+              </span>
+            ))}
+          </span>
+        </div>
+        <p className="mt-2 text-[11px] leading-[1.7] text-ink-500">
+          हर {toHindiDigits(GRACE_EVERY_DAYS)} दिन की साधना पर एक क्षमा दिन मिलता है (ज़्यादा से
+          ज़्यादा {toHindiDigits(GRACE_MAX)})। दिन छूट जाए तो अपने आप लग जाती है।
+        </p>
       </Card>
 
       {/* याद दिलाने की नम्र सलाह — नीचे, ताकि पूजा का बटन साफ़ रहे */}
@@ -237,6 +317,11 @@ export function Home({
       </p>
     </div>
   );
+}
+
+/** "3 दिन बीत गए" जैसा वाक्य */
+function toHindiDays(count: number): string {
+  return `${toHindiDigits(count)} दिन बीत गए`;
 }
 
 /** समय के हिसाब से नमस्कार — सुबह अलग, शाम अलग */
@@ -311,7 +396,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 function weekCount(completed: string[]): number {
   const keys = new Set(completed);
-  const today = new Date();
+  const today = calendarDateForDevotionalDay();
   let count = 0;
   for (let i = 0; i < 7; i += 1) {
     if (keys.has(toDateKey(addDays(today, -i)))) count += 1;
