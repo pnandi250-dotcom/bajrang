@@ -16,6 +16,7 @@ import { fmt, t as translate, useLang, useT, type Lang } from "../lib/i18n";
 import { Button } from "../components/ui/Button";
 import { Card, Eyebrow } from "../components/ui/Card";
 import { WeekStrip } from "../components/WeekStrip";
+import { LanguagePicker } from "../components/LanguagePicker";
 
 export function Home({
   onStartRitual,
@@ -82,13 +83,16 @@ export function Home({
             </>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          className="rounded-full bg-saffron-100/70 px-3 py-1.5 text-xs font-bold tracking-[0.12em] text-saffron-700"
-        >
-          BAJRANG
-        </button>
+        <div className="flex items-center gap-2">
+          <LanguagePicker variant="compact" />
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="rounded-full bg-saffron-100/70 px-3 py-1.5 text-xs font-bold tracking-[0.12em] text-saffron-700"
+          >
+            BAJRANG
+          </button>
+        </div>
       </header>
 
       {/* नमस्कार */}

@@ -1,5 +1,6 @@
 import { actions } from "../lib/store";
 import { useT } from "../lib/i18n";
+import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
 
 /**
@@ -21,7 +22,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <Backdrop />
 
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col">
-        <header className="flex justify-end pt-2">
+        <header className="flex items-center justify-between gap-3 pt-2">
+          <LanguagePicker variant="compact" />
           <span className="rounded-full bg-white/70 px-3 py-1.5 text-xs font-bold tracking-[0.14em] text-saffron-700">
             BAJRANG
           </span>
@@ -44,6 +46,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </p>
 
           <div className="mt-8 w-full space-y-3">
+            <LanguagePicker variant="full" className="mb-5 text-left" />
             <Button variant="primary" size="xl" block onClick={start}>
               {t("पूजा शुरू करें 🙏")}
             </Button>

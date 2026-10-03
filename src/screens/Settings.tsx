@@ -21,9 +21,10 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
+import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
 import { playChime } from "../lib/audio";
-import { fmt, LANGS, setLang, useLang, useT } from "../lib/i18n";
+import { fmt, useT } from "../lib/i18n";
 import { cn } from "../lib/utils";
 
 const TIME_PRESETS = ["05:30", "06:00", "06:30", "07:00", "07:30", "08:00"];
@@ -31,7 +32,6 @@ const TIME_PRESETS = ["05:30", "06:00", "06:30", "07:00", "07:30", "08:00"];
 export function Settings({ onReset }: { onReset: () => void }) {
   const state = useDerivedState();
   const t = useT();
-  const lang = useLang();
   const [name, setName] = useState(state.profile.name);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -363,35 +363,9 @@ export function Settings({ onReset }: { onReset: () => void }) {
 
       <Card className="mt-4">
         <SectionTitle hindi="भाषा" english="Language" />
-        <div className="grid grid-cols-2 gap-2">
-          {LANGS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setLang(item.id)}
-              className={cn(
-                "rounded-2xl border-2 px-4 py-3 text-base font-bold transition-colors",
-                lang === item.id
-                  ? "border-saffron-500 bg-saffron-500 text-white"
-                  : "border-saffron-200 bg-white text-ink-700",
-              )}
-            >
-              <span>{item.label}</span>
-              <span className="ml-1.5 text-[10px] font-semibold tracking-wide uppercase opacity-70">
-                {item.english}
-              </span>
-            </button>
-          ))}
-        </div>
-        <p className="mt-3 text-xs leading-relaxed text-ink-500">
-          {t("श्रीरामचरितमानस की भाषा में")}
-        </p>
-        <p className="mt-1 text-xs leading-relaxed text-ink-500">
-          {lang === "bn"
-            ? t("বাংলায় শ্লোক দেবনাগরিতেই থাকবে")
-            : t("हिंदी में श्लोक उसी मूल रूप में रहते हैं")}
-        </p>
+        <LanguagePicker variant="full" />
       </Card>
+
       <Card className="mt-4">
         <SectionTitle hindi="आपकी साधना" english="Your data" />
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -409,7 +383,9 @@ export function Settings({ onReset }: { onReset: () => void }) {
         <ul className="space-y-1.5 text-sm text-ink-700">
           <li>{t("जय बजरंगबली 🙏")}</li>
           <li>{t("रोज़ एक मिनट की पूजा, बस इतनी सी।")}</li>
-          <li>Bajrang · v0.1</li>
+          <li>
+            Bajrang · v0.2 · {t("हिंदी ⇄ बंगाला")} 
+          </li>
         </ul>
       </Card>
 
