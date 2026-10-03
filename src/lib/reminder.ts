@@ -40,6 +40,7 @@ export function nextOccurrence(time: string, from: Date = new Date()): Date {
 
 function permission(): NotificationPermission | "unsupported" {
   if (typeof Notification === "undefined") return "unsupported";
+  if (!window.isSecureContext) return "unsupported";
   return Notification.permission;
 }
 

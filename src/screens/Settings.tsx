@@ -2,6 +2,7 @@ import { useState } from "react";
 import { actions, useDerivedState } from "../lib/store";
 import { formatTime, normalizeTime, toHindiDigits } from "../lib/date";
 import { formatNextReminder, requestPermission, reminderText, sendTestReminder } from "../lib/reminder";
+import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { playChime } from "../lib/audio";
@@ -14,6 +15,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const [name, setName] = useState(state.profile.name);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const caps = capabilities();
 
   async function toggleNotifications() {
     const next = !state.profile.reminderEnabled;
@@ -23,7 +25,9 @@ export function Settings({ onReset }: { onReset: () => void }) {
       setNotice(
         granted
           ? "चालू — रोज़ सुबह संदेश आएगा।"
-          : "ब्राउज़र ने इजाज़त नहीं दी। फ़ोन की अलार्म में समय लगा लीजिए।",
+          : caps.secure
+            ? "ब्राउज़र ने इजाज़त नहीं दी। फ़ोन की अलार्म में समय लगा लीजिए।"
+            : "https पर यह काम करता है। फ़ोन की अलार्म में समय लगा लीजिए।",
       );
       return;
     }
@@ -40,6 +44,21 @@ export function Settings({ onReset }: { onReset: () => void }) {
     <div className="safe-top px-5 pt-3 pb-6">
       <h1 className="text-3xl font-extrabold text-ink-900">सेटिंग</h1>
       <p className="mt-1 text-sm font-semibold tracking-wide text-ink-500 uppercase">Settings</p>
+
+      {!caps.secure ? (
+        <Card className="mt-5 border-sindoor-200 bg-sindoor-700">
+          <p className="text-lg font-bold text-white">सुरक्षित कनेक्शन नहीं है</p>
+          <p className="mt-2 text-sm leading-[1.85] text-cream-200">
+            अभी यह ऐप <b>http</b> पर चल रहा है। रोज़ का संदेश, फ़ोन में इंस्टॉल, और पूजा के
+            दौरान स्क्रीन जली रखना — ये सब <b>https</b> पर ही चलते हैं। पूजा और स्ट्रीक फिर भी
+            ठीक से काम करेंगे।
+          </p>
+          <p className="mt-3 rounded-2xl bg-sindoor-800/50 px-4 py-2.5 text-xs leading-[1.8] text-cream-200">
+            असली जाँच के लिए ऐप को किसी https पते पर चलाएँ, या अपने फ़ोन के अलार्म में{" "}
+            {formatTime(state.profile.reminderTime)} लगा लीजिए।
+          </p>
+        </Card>
+      ) : null}
 
       <Card className="mt-5">
         <SectionTitle hindi="आपका नाम" english="Name" />
@@ -112,9 +131,17 @@ export function Settings({ onReset }: { onReset: () => void }) {
           <p className="mt-1.5 text-base leading-relaxed font-bold text-ink-900">
             {reminderText(state.profile.name)}
           </p>
-          <Button variant="soft" size="md" block className="mt-3" onClick={sendTest}>
-            अभी संदेश भेजकर देखें
-          </Button>
+          {caps.notificationsGranted ? (
+            <Button variant="soft" size="md" block className="mt-3" onClick={sendTest}>
+              अभी संदेश भेजकर देखें
+            </Button>
+          ) : (
+            <p className="mt-3 rounded-2xl bg-cream-300/70 px-4 py-2.5 text-xs leading-[1.8] text-ink-700">
+              {caps.secure
+                ? "पहले ऊपर वाला स्विच चालू कीजिए — फिर यह संदेश जाँच सकेंगे।"
+                : "यह जाँच https पर ही हो पाएगी।"}
+            </p>
+          )}
         </div>
 
         <p className="mt-3 text-xs leading-relaxed text-ink-500">
