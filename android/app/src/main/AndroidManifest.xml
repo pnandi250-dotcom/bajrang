@@ -42,9 +42,14 @@
     <!-- रोज़ सुबह का संदेश -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- सही समय पर, "बैटरी सेव" के बावजूद संदेश पहुँचाने के लिए -->
+    <!--
+      सही समय पर संदेश पहुँचाने के लिए।
+      USE_EXACT_ALARM जानबूझकर नहीं डाला गया: वह "अलार्म/टाइमर ऐप" होने का
+      दावा माना जाता है और Play Store को उसकी अलग से घोषणा करनी पड़ती है।
+      SCHEDULE_EXACT_ALARM उपयोगकर्ता से एक बार अनुमति लेता है (ऐप में बटन है)
+      और Play को कोई विशेष घोषणा नहीं चाहिए।
+    -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- फ़ोन दोबारा चालू होने पर संदेश फिर से बनने चाहिए -->

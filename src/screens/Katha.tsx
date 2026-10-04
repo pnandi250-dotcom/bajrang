@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { KATHA_TOTAL, PARTS, plan, type PlanEntry } from "../lib/katha";
+import { KATHA_TOTAL, PARTS, plan, publishedCount, writtenCount, type PlanEntry } from "../lib/katha";
 import { actions, useDerivedState } from "../lib/store";
 import { toNativeDigits } from "../lib/date";
-import { useT } from "../lib/i18n";
+import { fmt, useT } from "../lib/i18n";
 import { Card, Eyebrow, SectionTitle } from "../components/ui/Card";
 import { cn } from "../lib/utils";
 
@@ -11,8 +11,10 @@ export function Katha() {
   const t = useT();
   const revealed = state.kathaRevealed;
   const entries = plan();
-  const latest = revealed > 0 ? entries[revealed - 1] : null;
-  const next = entries[revealed] ?? null;
+  const live = publishedCount();
+  // केवल वही प्रसंग खुला है जो जाँच से गुज़र चुका है
+  const latest = live > 0 ? entries[live - 1] : null;
+  const next = live < KATHA_TOTAL && !entries[live]?.withheld ? (entries[live] ?? null) : null;
 
   // सबसे नया प्रसंग खुलकर दिखे — बाकी बंद
   const [openN, setOpenN] = useState<number | null>(latest?.n ?? null);
@@ -26,7 +28,7 @@ export function Katha() {
     actions.markKathaRead(n);
   }
 
-  const done = revealed >= KATHA_TOTAL;
+  const done = live >= KATHA_TOTAL;
 
   return (
     <div className="safe-top px-5 pt-3 pb-6">
@@ -41,7 +43,7 @@ export function Katha() {
           <div>
             <Eyebrow tone="gold">{t("प्रसंग")}</Eyebrow>
             <p className="mt-1 text-3xl leading-none font-extrabold text-ink-900 tabular-nums">
-              {toNativeDigits(revealed)}
+              {toNativeDigits(live)}
               <span className="ml-1 text-lg font-bold text-ink-500">
                 / {toNativeDigits(KATHA_TOTAL)}
               </span>
@@ -52,10 +54,27 @@ export function Katha() {
           </p>
         </div>
 
+        {live === 0 ? (
+          <div className="mt-5 rounded-2xl bg-white/80 px-4 py-3">
+            <p className="text-[11px] font-bold tracking-[0.14em] text-gold-600 uppercase">
+              {t("जाँच बाकी — स्क्रीन पर रुका है")}
+            </p>
+            <p className="mt-2 text-sm leading-[1.85] text-ink-700">
+              {fmt(
+                "{w} प्रसंग लिखे गए हैं, पर विद्वान पाठक ने अभी एक भी देखा नहीं। इसलिए यहाँ अभी कुछ नहीं दिखाया जा रहा — जाँच पूरी होते ही प्रसंग अपने आप खुल जाएँगे।",
+                { w: toNativeDigits(writtenCount()) },
+              )}
+            </p>
+            <p className="mt-2 text-xs leading-[1.8] text-ink-500">
+              {t("हर प्रसंग का स्रोत दर्ज है — वाल्मीकि रामायण अथवा रामचरितमानस।")}
+            </p>
+          </div>
+        ) : null}
+
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-cream-300">
           <div
             className="h-full rounded-full bg-linear-to-r from-saffron-400 to-saffron-600 transition-[width]"
-            style={{ width: `${Math.round((revealed / KATHA_TOTAL) * 100)}%` }}
+            style={{ width: `${Math.round((live / KATHA_TOTAL) * 100)}%` }}
           />
         </div>
 
@@ -89,8 +108,8 @@ export function Katha() {
       {/* सारे प्रसंग — भाग-भाग के क्रम में */}
       {PARTS.map((part) => {
         const list = entries.filter((entry) => entry.part.id === part.id);
-        const openInPart = list.filter((entry) => entry.n <= revealed).length;
-        if (!openInPart) return null;
+        const openInPart = list.filter((entry) => !entry.withheld).length;
+        if (!openInPart && live === 0 && part.id !== "janam") return null;
         return (
           <section key={part.id} className="mt-6">
             <SectionTitle hindi={part.name} english={`${openInPart} / ${list.length}`} />
@@ -99,7 +118,7 @@ export function Katha() {
                 <EpisodeRow
                   key={entry.n}
                   entry={entry}
-                  unlocked={entry.n <= revealed}
+                  unlocked={!entry.withheld && entry.n <= revealed}
                   open={openN === entry.n}
                   onToggle={() => toggle(entry.n)}
                 />
@@ -109,30 +128,22 @@ export function Katha() {
         );
       })}
 
-      {/* आगे का हिस्सा — क्रम बता रहे हैं, प्रसंग अभी लिखे जा रहे हैं */}
-      {entries.some((entry) => entry.n > revealed) ? (
+      {/* आगे के प्रसंग — सिर्फ़ गिनती, शीर्षक नहीं (वे भी जाँच में हैं) */}
+      {live < KATHA_TOTAL ? (
         <Card className="mt-6 border-saffron-200 bg-cream-200/60">
           <p className="text-sm leading-[1.85] font-semibold text-ink-700">
-            {t("आगे की कथा लिखी जा रही है — जिस दिन आपकी पूजा होगी, उसी दिन अगला प्रसंग खुल जाएगा।")}
+            {fmt("जाँच पूरी होने पर {r} और प्रसंग खुल जाएँगे — एक-एक करके।", {
+              r: toNativeDigits(KATHA_TOTAL - live),
+            })}
           </p>
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {entries
-              .filter((entry) => entry.n > revealed)
-              .slice(0, 6)
-              .map((entry) => (
-                <span
-                  key={entry.n}
-                  className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold text-ink-500"
-                >
-                  🔒 {toNativeDigits(entry.n)} · {entry.title}
-                </span>
-              ))}
-          </div>
+          <p className="mt-2 text-xs leading-[1.8] text-ink-500">
+            {t("रुके हुए प्रसंगों का शीर्षक भी अभी नहीं दिखाया जाता — जो कुछ जाँच से नहीं गुज़रा, वह प्रकाशित नहीं होगा।")}
+          </p>
         </Card>
       ) : null}
 
       <p className="mt-6 rounded-3xl bg-cream-200/70 p-4 text-xs leading-[1.85] text-ink-500">
-        {t("यह कथा रामचरितमानस की कथा-परंपरा पर आधारित है — सरल हिन्दी में, क्रम से। प्रारूप में लिखी गई है; मूल ग्रंथ से मिलाकर समीक्षा बाकी है।")}
+        {t("हर प्रसंग का स्रोत दर्ज है — वाल्मीकि रामायण या रामचरितमानस। जो कथा इन दोनों में नहीं मिलती, उसे “लोक-परंपरा” कहा गया है। विद्वान पाठक की समीक्षा पूरी होने से पहले कोई प्रसंग प्रकाशित नहीं होता।")}
       </p>
     </div>
   );
@@ -184,9 +195,11 @@ function EpisodeRow({
           <span className="block text-base font-extrabold text-ink-900">
             {entry.title}
           </span>
-          {entry.episode && !entry.episode.reviewed ? (
+          {entry.episode ? (
             <span className="mt-0.5 block text-[10px] font-bold tracking-[0.1em] text-gold-700 uppercase">
-              {t("प्रारूप — जाँच बाकी")}
+              {entry.episode.tradition === "folk"
+                ? t("लोक-परंपरा — जाँच बाकी")
+                : t("ग्रंथ-आधारित — जाँच बाकी")}
             </span>
           ) : null}
           {entry.episode ? (
@@ -212,6 +225,9 @@ function EpisodeRow({
               ))}
               <p className="mt-4 rounded-2xl bg-saffron-50 px-4 py-3 text-sm leading-[1.8] font-semibold text-saffron-800">
                 {t("सीख · ")} {entry.episode.lesson}
+              </p>
+              <p className="mt-2 text-[11px] leading-[1.7] font-semibold text-ink-500">
+                {t("स्रोत:")} {entry.episode.source}
               </p>
               {entry.episode.note ? (
                 <p className="mt-2 rounded-2xl bg-cream-200/70 px-4 py-3 text-xs leading-[1.8] text-ink-500">

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { VERSE_PENDING_NOTE, hopeOfDay, verseOfDay } from "../lib/content";
-import { KATHA_TOTAL, plan } from "../lib/katha";
+import { KATHA_TOTAL, plan, publishedCount, writtenCount } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   addDays,
@@ -45,8 +45,8 @@ export function Home({
   const isNewHere = state.streak === 0 && state.totalCompleted === 0;
   // कथा का हुक — कल क्या खुलेगा, यह आज से ही बताओ
   const kathaHook = useMemo(
-    () => kathaTeaser(state.kathaRevealed, state.kathaRead, lang),
-    [state.kathaRevealed, state.kathaRead, lang],
+    () => kathaTeaser(state.kathaRead, lang),
+    [state.kathaRead, lang],
   );
 
   return (
@@ -364,18 +364,21 @@ export function Home({
  * कथा का इशारा — यही वह कारण है जो भक्त को कल फिर लाता है।
  * पहली पूजा से पहले भी उत्सुकता बननी चाहिए, पूजा के बाद भी अगला प्रसंग दिखना चाहिए।
  */
-function kathaTeaser(revealed: number, read: number, lang: Lang) {
+function kathaTeaser(read: number, lang: Lang) {
   const entries = plan(lang);
-  const latest = revealed > 0 ? entries[revealed - 1] : null;
-  const next = entries[revealed] ?? null;
+  const live = publishedCount();
+  const latest = live > 0 ? entries[live - 1] : null;
+  const next = live < KATHA_TOTAL && !entries[live]?.withheld ? (entries[live] ?? null) : null;
 
+  // जब तक विद्वान पाठक ने देखा नहीं, कुछ न दिखाओ — न कथा, न उसका आइरा
   if (!latest) {
     return {
-      title: translate("आज की पूजा के बाद खुलेगा पहला प्रसंग"),
-      note: translate(
-        "रोज़ एक प्रसंग, पूजा के बाद — ताकि कथा आगे बढ़ती रहे और आप कल फिर आएँ।",
+      title: translate("कथा जाँच के बाद खुलेगी"),
+      note: fmt(
+        "{w} प्रसंग लिखे जा चुके हैं और हर एक का स्रोत दर्ज है, पर विद्वान पाठक की समीक्षा बाकी है। तब तक यह कथा आपके सामने नहीं आएगी।",
+        { w: toNativeDigits(writtenCount()) },
       ),
-      cta: translate("कथा देखें"),
+      cta: translate("जाँच की स्थिति देखें"),
     };
   }
   if (!next) {
@@ -385,7 +388,7 @@ function kathaTeaser(revealed: number, read: number, lang: Lang) {
       cta: translate("कथा दोबारा पढ़ें"),
     };
   }
-  const label = read >= revealed ? "पिछला प्रसंग: " : "नया खुला प्रसंग: ";
+  const label = read >= live ? "पिछला प्रसंग: " : "नया खुला प्रसंग: ";
   return {
     title: `${translate(label)}${latest.title}`,
     note: fmt("कल पूजा के बाद खुलेगा — प्रसंग {n}: {title}।", {

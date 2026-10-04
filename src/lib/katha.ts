@@ -5,13 +5,20 @@ import { getLang, type Lang } from "./i18n";
 /*
  * बजरंग कथा — 108 प्रसंग, एक-एक करके
  * ────────────────────────────────────────────────
- * यह कथा रामचरितमानस की कथा-परंपरा पर आधारित है, पर उपन्यास की तरह
- * सरल हिन्दी में लिखी गई है ताकि रोज़ का एक मिनट पढ़ा जा सके। प्रसंग क्रम से
- * चलते हैं — हर पूजा के बाद एक नया प्रसंग खुलता है।
+ * नियम, जो अब बदल चुका है:
  *
- * हर प्रसंग पर "लेखन: प्रारूप (reviewed: false)" है — कोई विद्वान पाठक
- * मूल रामचरितमानस से मिलाकर देखें, तभी इसे धारणीय कहा जा सके। सारी सूची
- * और जाँच-विवरण: CONTENT-REVIEW.md
+ * 1. **हर प्रसंग का एक स्रोत होना चाहिए** — वाल्मीकि रामायण (किताब/सर्ग)
+ *    या रामचरितमानस (काण्ड/दोहा)। स्रोत न दिया जा सके, तो प्रसंग नहीं लिखा
+ *    जाएगा।
+ * 2. **लोक-कथा जो मिल-जुलकर लिखी गई होगी, वह या तो काट दी जाएगी, या उस पर
+ *    साफ़ "लोक-परंपरा" लिखा होगा** — `tradition: "folk"` के साथ।
+ * 3. **विद्वान की समीक्षा से पहले कुछ भी प्रकाशित नहीं होगा।** `published`
+ *    तभी सही है जब `reviewed: true` हो। इसलिए आज कोई प्रसंग स्क्रीन पर नहीं
+ *    दिखता — यह जानबूझकर है, भूल नहीं।
+ * 4. हर प्रसंग पर `source` (ग्रंथ और अध्याय) और `sources` (जाँच की गई पंक्तियाँ)
+ *    दर्ज रहेंगे, ताकि पाठक केवल शब्द नहीं, हवाला भी देख सके।
+ *
+ * सारी सूची और जाँच-विवरण: CONTENT-REVIEW.md
  */
 
 /** कुल प्रसंग — यही कथा की लंबाई है */
@@ -29,8 +36,21 @@ export type KathaEpisode = {
   note?: string;
   /** भाग का नाम */
   part: string;
-  /** अभी समीक्षा बाकी है */
+  /**
+   * यह प्रसंग कहाँ से है — "वाल्मीकि रामायण, उत्तरकाण्ड ५" या
+   * "रामचरितमानस, बालकाण्ड १"। ख़ाली या "—" हो तो प्रसंग अधूरा है।
+   */
+  source: string;
+  /**
+   * "script" = दोनों बड़े ग्रंथों में मिलता है;
+   * "folk" = लोक-परंपरा, बड़े ग्रंथों में नहीं;
+   * "mixed" = ग्रंथ की पंक्तियाँ + लोक का रूप जोड़कर।
+   */
+  tradition: "script" | "folk" | "mixed" | "unsourced";
+  /** विद्वान पाठक ने देखा है? */
   reviewed: boolean;
+  /** reviewed होने पर ही स्क्रीन पर दिखेगा — तब तक रोका रहेगा */
+  published: boolean;
 };
 
 export type Part = { id: string; name: string; from: number; to: number };
@@ -53,7 +73,11 @@ export const PARTS: Part[] = [
 ];
 
 /** अभी लिखे गए प्रसंग 1–30 */
-export const EPISODES: KathaEpisode[] = [
+/**
+ * अभी लिखे गए प्रसंग — इनमें अभी कोई ग्रंथ-स्रोत नहीं जोड़ा नहीं गया, इसलिए ये
+ * `unsourced` हैं और प्रकाशित नहीं हो सकते। जाँच होकर स्रोत जुड़ने पर ही ये खुलेंगे।
+ */
+const RAW_DRAFTS: Omit<KathaEpisode, "source" | "tradition" | "published">[] = [
   {
     n: 1,
     part: "बाल्य",
@@ -433,6 +457,14 @@ export const EPISODES: KathaEpisode[] = [
   },
 ];
 
+/** अभी तक कोई प्रसंग प्रकाशित नहीं — जाँच पूरी होने पर यहाँ खुलेंगे */
+export const EPISODES: KathaEpisode[] = RAW_DRAFTS.map((draft) => ({
+  ...draft,
+  source: "—",
+  tradition: "unsourced" as const,
+  published: false,
+}));
+
 /*
  * भाग ४–९ के शीर्षक — कथा का नक्शा यहीं तय है, प्रसंग क्रम से लिखे जाएँगे।
  * हर भाग में उतने ही शीर्षक हैं जितने उस भाग के प्रसंग हैं (जाँच: content-check)
@@ -530,48 +562,38 @@ const FORTHCOMING_TITLES: Record<string, string[]> = {
   ],
 };
 
-/** कथा का पूरा नक्शा — 108 प्रसंग, क्रम से। लिखे गए प्रसंग में `episode` भरा है। */
+/** कथा का पूरा नक्शा — 108 प्रसंग, क्रम से। */
 export type PlanEntry = {
   n: number;
   part: Part;
+  /** प्रकाशित प्रसंग का शीर्षक; रुके हुए प्रसंग का शीर्षक भी नहीं दिखाया जाता */
   title: string;
   /** अभी लिखा गया प्रसंग, वरना null */
   episode: KathaEpisode | null;
+  /**
+   * जाँच बाकी है इसलिए रुका हुआ — जाँच पूरी होने पर यह `false` हो जाएगा और
+   * प्रसंग अपने आप खुल जाएगा।
+   */
+  withheld: boolean;
 };
 
 export function partFor(n: number): Part | null {
   return PARTS.find((part) => n >= part.from && n <= part.to) ?? null;
 }
 
-/** अभी लिखा गया प्रसंग, वरना null */
+/** लिखा गया प्रसंग (चाहे प्रकाशित हो या न) */
 export function writtenEpisode(n: number): KathaEpisode | null {
   return EPISODES.find((item) => item.n === n) ?? null;
 }
 
-let planCache: PlanEntry[] | null = null;
-let planCacheLang: Lang | null = null;
+/** लिखे गए प्रसंगों की संख्या */
+export function writtenCount(): number {
+  return EPISODES.length;
+}
 
-/** 108 प्रसंगों की सूची — लिखे गए और आने वाले, दोनों साथ। भाषा के हिसाब से। */
-export function plan(lang: Lang = getLang()): PlanEntry[] {
-  if (planCache && planCacheLang === lang) return planCache;
-  planCacheLang = lang;
-  planCache = PARTS.flatMap((part) => {
-    const titles =
-      FORTHCOMING_TITLES[part.id] ??
-      EPISODES.filter((item) => item.part === part.name).map((item) => item.title);
-    return titles.map((rawTitle, index) => {
-      const n = part.from + index;
-      const written = writtenEpisode(n);
-      const episode = localize(written, lang);
-      return {
-        n,
-        part,
-        title: episode?.title ?? rawTitle,
-        episode,
-      };
-    });
-  });
-  return planCache;
+/** सच में प्रकाशित (जाँच पूरी) प्रसंगों की संख्या */
+export function publishedCount(): number {
+  return EPISODES.filter((item) => item.published).length;
 }
 
 /** प्रसंग का हिंदी लेखन — भाषा चाहे जो भी हो */
@@ -589,7 +611,40 @@ function localize(episode: KathaEpisode | null, lang: Lang): KathaEpisode | null
   };
 }
 
-/** पूजा के बाद खुला नया प्रसंग (null = सब खुल चुके) */
+let planCache: PlanEntry[] | null = null;
+let planCacheLang: Lang | null = null;
+
+/**
+ * 108 प्रसंगों की सूची।
+ *
+ * जो प्रसंग विद्वान की समीक्षा में हैं, वही खुले दिखते हैं — शीर्षक समेत।
+ * जो अभी रुके हैं, उनका शीर्षक भी नहीं दिखाया जाता, सिर्फ़ गिनती और "जाँच बाकी"।
+ */
+export function plan(lang: Lang = getLang()): PlanEntry[] {
+  if (planCache && planCacheLang === lang) return planCache;
+  planCacheLang = lang;
+  planCache = PARTS.flatMap((part) => {
+    const titles =
+      FORTHCOMING_TITLES[part.id] ??
+      EPISODES.filter((item) => item.part === part.name).map((item) => item.title);
+    return titles.map((rawTitle, index) => {
+      const n = part.from + index;
+      const written = writtenEpisode(n);
+      const withheld = !written || !written.published;
+      const episode = withheld ? null : localize(written, lang);
+      return {
+        n,
+        part,
+        title: withheld ? "" : (episode?.title ?? rawTitle),
+        episode,
+        withheld,
+      };
+    });
+  });
+  return planCache;
+}
+
+/** पूजा के बाद खुलने वाला अगला प्रसंग (null = कुछ प्रकाशित नहीं) */
 export function revealedAfter(revealed: number): PlanEntry | null {
   return plan()[revealed - 1] ?? null;
 }

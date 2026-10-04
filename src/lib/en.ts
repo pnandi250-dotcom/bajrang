@@ -321,4 +321,26 @@ export const EN: Record<string, string> = {
   "अर्थ:": "Meanings:",
   "पंक्ति जो कहती है उसी का सार लिखा है, पर यह मेरा अपना लेखन है और जाँचा नहीं गया।": "each one describes the lines it sits under, but these are my own words and have not been checked.",
   "इसीलिए हर पंक्ति के साथ “जाँच बाकी” दिखता है — कोई पाठ ग़लती से प्रामाणिक न समझ ले। जाँच पूरी होने पर यह निशान हट जाएगा।": "That is why every line carries a \"Not checked yet\" mark — so no text is taken for verified scripture. The mark disappears when the review is done.",
+
+  /* ---------- कथा रोकी हुई (जाँच बाकी) ---------- */
+  "कथा जाँच के बाद खुलेगी": "The katha opens after review",
+  "{w} प्रसंग लिखे जा चुके हैं और हर एक का स्रोत दर्ज है, पर विद्वान पाठक की समीक्षा बाकी है। तब तक यह कथा आपके सामने नहीं आएगी।": "{w} episodes are written and each records its source, but a knowledgeable reader has not checked them yet. Until then the katha does not appear.",
+  "जाँच की स्थिति देखें": "See the review status",
+  "जाँच बाकी — स्क्रीन पर रुका है": "Review pending — held back from the screen",
+  "{w} प्रसंग लिखे गए हैं, पर विद्वान पाठक ने अभी एक भी देखा नहीं। इसलिए यहाँ अभी कुछ नहीं दिखाया जा रहा — जाँच पूरी होते ही प्रसंग अपने आप खुल जाएँगे।": "{w} episodes are written, but no knowledgeable reader has looked at any of them yet, so nothing is shown here — when the review is done the episodes open by themselves.",
+  "हर प्रसंग का स्रोत दर्ज है — वाल्मीकि रामायण अथवा रामचरितमानस।": "Every episode records its source — the Valmiki Ramayana or the Ramcharitmanas.",
+  "जाँच पूरी होने पर {r} और प्रसंग खुल जाएँगे — एक-एक करके।": "When the review is done, {r} more episodes will open, one at a time.",
+  "रुके हुए प्रसंगों का शीर्षक भी अभी नहीं दिखाया जाता — जो कुछ जाँच से नहीं गुज़रा, वह प्रकाशित नहीं होगा।": "The titles of withheld episodes are not shown either — what has not passed review is not published.",
+  "हर प्रसंग का स्रोत दर्ज है — वाल्मीकि रामायण या रामचरितमानस। जो कथा इन दोनों में नहीं मिलती, उसे “लोक-परंपरा” कहा गया है। विद्वान पाठक की समीक्षा पूरी होने से पहले कोई प्रसंग प्रकाशित नहीं होता।": "Every episode records its source — the Valmiki Ramayana or the Ramcharitmanas. Anything found in neither is marked \"folk tradition\". No episode is published before a knowledgeable reader has checked it.",
+  "लोक-परंपरा — जाँच बाकी": "Folk tradition — review pending",
+  "ग्रंथ-आधारित — जाँच बाकी": "From the texts — review pending",
+
+  /* ---------- कथा की स्थिति ---------- */
+  "कथा का हाल": "State of the katha",
+  "{w} प्रसंग लिखे गए हैं, {p} प्रकाशित। जाँच पूरी न होने तक कथा स्क्रीन पर नहीं दिखती — न प्रसंग, न उनका शीर्षक।": "{w} episodes written, {p} published. Until the review is done the katha does not appear on the screen — not the episodes, not even their titles.",
+  "हर प्रसंग पर दो बड़े ग्रंथों में से स्रोत दर्ज है; जो कथा वहाँ नहीं मिलती उसे “लोक-परंपरा” कहा गया है।": "Every episode records a source from the two great texts; anything found in neither is marked \"folk tradition\".",
+
+  /* ---------- श्लोक-स्क्रीन पर जाँच ---------- */
+  "जाँच बाकी — अभी जाँचा नहीं गया": "Review pending — not checked yet",
+  "अर्थ हमारा अपना लेखन है — जाँच बाकी।": "the meaning is my own writing — review pending.",
 };
