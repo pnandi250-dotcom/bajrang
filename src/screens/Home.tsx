@@ -283,7 +283,14 @@ export function Home({
             </span>
           ))}
         </p>
-        <p className="mt-3 text-sm leading-[1.85] text-ink-500">{verse.meaning}</p>
+        {verse.meaningReviewed ? (
+          <p className="mt-3 text-sm leading-[1.85] text-ink-500">{verse.meaning}</p>
+        ) : (
+          <p className="mt-3 rounded-2xl bg-cream-200/80 px-4 py-2.5 text-xs leading-[1.8] text-ink-600">
+            <b className="text-ink-800">{t("अर्थ अभी जाँचा नहीं गया")}</b>{" "}
+            {t("पंक्ति यथावत है, पर जोड़ा गया यह अर्थ भरोसेमंद नहीं लगा — इसलिए छिपाया गया है।")}
+          </p>
+        )}
         {verse.verified ? null : (
           <p className="mt-3 rounded-2xl bg-gold-200/60 px-4 py-2.5 text-xs leading-[1.75] text-ink-700">
             <b className="text-gold-700">{t("जाँच बाकी")}</b> {t(VERSE_PENDING_NOTE)}

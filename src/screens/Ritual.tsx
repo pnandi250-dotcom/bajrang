@@ -247,7 +247,7 @@ export function Ritual({
         {/* पंक्ति-दर-पंक्ति — जो चल रही है वही चमकती है */}
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 py-4">
           <p className="mx-4 max-w-sm rounded-2xl bg-black/15 px-4 py-2 text-center text-[11px] leading-[1.7] text-cream-300/90">
-            {t("पाठ:")} {CHALISA_SOURCE.edition} · {t("अर्थ हमारा अपना लेखन है — जाँच बाकी।")}
+            {t("पाठ:")} {CHALISA_SOURCE.edition} · {t("अर्थ अभी छिपा हुआ है — जाँच होने पर ही दिखेगा।")}
           </p>
           <p className="rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold tracking-[0.14em] text-gold-200 uppercase">
             {verse.source}

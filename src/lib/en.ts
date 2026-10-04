@@ -343,4 +343,15 @@ export const EN: Record<string, string> = {
   /* ---------- श्लोक-स्क्रीन पर जाँच ---------- */
   "जाँच बाकी — अभी जाँचा नहीं गया": "Review pending — not checked yet",
   "अर्थ हमारा अपना लेखन है — जाँच बाकी।": "the meaning is my own writing — review pending.",
+
+  /* ---------- अर्थ छिपा हुआ है ---------- */
+  "अर्थ अभी जाँचा नहीं गया": "Meaning not checked yet",
+  "पंक्ति यथावत है, पर जोड़ा गया यह अर्थ भरोसेमंद नहीं लगा — इसलिए छिपाया गया है।": "The line itself is accurate, but this explanation could not be trusted, so it is hidden.",
+  "अर्थ अभी छिपा हुआ है — जाँच होने पर ही दिखेगा।": "meaning hidden until reviewed",
+  "{m} / {n} अर्थ जाँचे गए।": "{m} of {n} meanings reviewed.",
+  "अभी कोई अर्थ जाँचा नहीं गया, इसलिए स्क्रीन पर अर्थ दिखता ही नहीं — केवल पंक्ति और उसका स्रोत।": "No meaning has been reviewed, so none is shown on screen — only the lines and their source.",
+
+  /* ---------- अर्थ की गिनती ---------- */
+  "{m} / {n} जाँचे गए — बाकी छिपे हैं।": "{m} of {n} reviewed — the rest are hidden.",
+  "पंक्ति स्क्रीन पर है, पर जोड़ा गया यह अर्थ अभी भरोसेमंद नहीं — इसलिए दिखाया नहीं जा रहा।": "The line is on screen, but this explanation is not yet trustworthy, so it is not shown.",
 };

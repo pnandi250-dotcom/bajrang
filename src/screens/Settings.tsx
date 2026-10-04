@@ -21,7 +21,7 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
-import { CHALISA_SOURCE, verseCheckStats } from "../lib/content";
+import { CHALISA_SOURCE, meaningCheckStats, verseCheckStats } from "../lib/content";
 import { publishedCount, writtenCount } from "../lib/katha";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
@@ -41,6 +41,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const [exactAlarm, setExactAlarm] = useState<"granted" | "denied" | "unknown">("unknown");
   const caps = capabilities();
   const verseStats = verseCheckStats();
+  const meaningStats = meaningCheckStats();
   const native = isNative();
 
   useEffect(() => {
@@ -402,7 +403,11 @@ export function Settings({ onReset }: { onReset: () => void }) {
           </li>
           <li>
             <b className="text-gold-700">{t("अर्थ:")}</b>{" "}
-            {t("पंक्ति जो कहती है उसी का सार लिखा है, पर यह मेरा अपना लेखन है और जाँचा नहीं गया।")}
+            {fmt("{m} / {n} जाँचे गए — बाकी छिपे हैं।", {
+              m: toNativeDigits(meaningStats.done),
+              n: toNativeDigits(meaningStats.total),
+            })}{" "}
+            {t("पंक्ति स्क्रीन पर है, पर जोड़ा गया यह अर्थ अभी भरोसेमंद नहीं — इसलिए दिखाया नहीं जा रहा।")}
           </li>
         </ul>
         <p className="mt-3 text-xs leading-[1.85] text-ink-500">

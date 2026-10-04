@@ -13,9 +13,13 @@ export type VerseView = {
   id: string;
   source: string;
   lines: string[];
+  /** जाँच होने पर ही भरा जाता है; अभी ख़ाली है, इसलिए स्क्रीन पर नहीं दिखता */
   meaning: string;
   chant?: string;
+  /** पंक्ति जाँची गई? (पाठ स्रोत से लिया गया है) */
   verified: boolean;
+  /** अर्थ जाँचा गया? — अभी किसी का भी नहीं */
+  meaningReviewed: boolean;
 };
 
 export function verseView(verse: Verse, lang: Lang = getLang()): VerseView {
@@ -25,9 +29,14 @@ export function verseView(verse: Verse, lang: Lang = getLang()): VerseView {
     id: verse.id,
     source: useTranslated ? translated.source : verse.source,
     lines: verse.lines,
-    meaning: useTranslated ? translated.meaning : verse.meaning,
+    meaning: verse.meaningReviewed
+      ? useTranslated
+        ? translated.meaning
+        : verse.meaning
+      : "",
     chant: verse.chant,
     verified: verse.verified,
+    meaningReviewed: verse.meaningReviewed,
   };
 }
 
@@ -44,6 +53,11 @@ export type Verse = {
   meaningBn?: string;
   /** जप का समय (वैकल्पिक) */
   chant?: string;
+  /**
+   * अर्थ जाँचा गया या नहीं। न किया हो तो स्क्रीन पर अर्थ दिखता ही नहीं —
+   * पंक्ति सही है, पर जोड़ा गया व्याख्या अभी भरोसेमंद नहीं।
+   */
+  meaningReviewed: boolean;
   /**
    * क्या यह पंक्ति किसी प्रमाणित संस्करण से जाँची गई है।
    * `false` = अभी केवल सामान्य प्रचलित पाठ पर आधारित, विद्वान की समीक्षा बाकी।
@@ -75,6 +89,13 @@ const PENDING = false;
 export const VERSE_PENDING_NOTE =
   "यह पंक्ति किसी प्रमाणिक संस्करण से मिलान कर जाँची नहीं गई है।";
 
+/** जाँच हुए अर्थों की संख्या (अभी शून्य) */
+export function meaningCheckStats() {
+  const total = VERSES.filter((verse) => !verse.source.includes("मंत्र")).length;
+  const done = VERSES.filter((verse) => verse.meaningReviewed).length;
+  return { total, done };
+}
+
 /** जाँच हुई पंक्तियों की संख्या (अभी शून्य) */
 export function verseCheckStats() {
   const total = VERSES.length;
@@ -102,6 +123,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "गुरु के चरणों की धूल से मन का दर्पण साफ़ करके ही रघुवर के गुण गाए जाते हैं — दायकु फल चारि यानी धर्म, अर्थ, काम और मोक्ष, इसी क्रम से मिलने वाले।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -113,6 +136,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "तुलसीदास अपनी अक्ल को छोटा बताते हैं और पवन-कुमार से बल, बुद्धि, विद्या देने की कामना करते हैं, और साथ ही मोह तथा कलेश के दूर होने की प्रार्थना करते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -124,6 +149,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "ज्ञान और गुणों के सागर, तीनों लोकों में प्रकाशमान — कपीस यानी वानों का स्वामी हनुमान की जय।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -135,6 +162,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "राम के दूत, अतुल बल के धाम, अंजनि के पुत्र और पवनसुत — इन्हीं नामों से उनकी पहचान पूरी होती है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -146,6 +175,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "महाबीर और विक्रम बजरंगी; वे कुमति यानी बुरे दोष को दूर करने वाली सुमति यानी अच्छी बुद्धि के साथ हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -157,6 +188,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "सोने जैसा वर्ण, कानों में कुंडल, घुटे हुए बिखरे बाल — सुवेश धारण की पूरी कला एक ही पंक्ति में।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -168,6 +201,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "हाथ में वज्र और ध्वजा, कंधे पर मूंज का जनेऊ — पराक्रम और सज्जा, दोनों साथ।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -179,6 +214,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "शंकर के पुत्र केसरीनंदन की तेज से तीनों लोक वंद हो जाते हैं — महा जग में ही उनका प्रताप है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -190,6 +227,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "विद्वान भी और बहुत चतुर भी, और राम के काम के लिए हमेशा तत्पर।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -201,6 +240,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "प्रभु का चरित्र सुनने को तैयार; राम, लक्ष्मण और सीता को मन में बसा कर उन्हें सुनते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -212,6 +253,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "सूक्ष्म रूप लेकर सीता के सामने दिखे, और बिकट रूप लेकर लंका जलाने गए।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -223,6 +266,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "भीम रूप धरकर असुरों से लड़े, और रामचंद्र के काम सँवारे।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -234,6 +279,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "संजीवनी ले आए, लक्ष्मण जीवित हुए; और हर्ष से उनका उर उठा ले आए।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -245,6 +292,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "रघुपति ने उन्हें बहुत बड़ाई दी, और उन्हें भरत के सम भाई कहा।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -256,6 +305,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "शेषनाथ ने अपने हज़ार मुखों से उनका गुण गाया; श्रीराम ने यही कहा और उन्हें गले लगा लिया।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -267,6 +318,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "सनकादि और ब्रह्मा जैसे मुनियों तक, नारद और सारद सहित, की स्तुति की गई।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -278,6 +331,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जम यानी यम, कुबेर और दिग्पाल जिनसे इनकार संभव नहीं, और कवि जो कहाँ तक कह सकें — हनुमान की महिमा इससे भी आगे है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -289,6 +344,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "सुग्रीव का उपकार किया, और राम से मिलाकर उन्हें राजपद दिया।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -300,6 +357,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "तुम्हारा मंत्र बिभीषण ने माना, और आप सब जगह लंकेश्वर बने।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -311,6 +370,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "हज़ार योजन की दूरी पर सूर्य को उन्होंने मधुर फल समझकर ही निगल लिया।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -322,6 +383,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "भगवान की मुद्रा मुँह में रखकर समुद्र को लाँघ गए — और आश्चर्य नहीं हुआ।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -333,6 +396,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जो काम जगत में दुर्गम हैं, आपके अनुग्रह से वे सरल हो जाते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -344,6 +409,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "राम के द्वार पर आप रखवारे हैं; आपकी आज्ञा के बिना कोई भी वहाँ प्रवेश नहीं कर सकता।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -355,6 +422,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "आपकी सरण में सबको सुख मिलता है, और आप रक्षक हैं — किसी को डर नहीं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -366,6 +435,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "अपनी महिमा का आकलन केवल आप ही करते हैं; आपकी गर्जना से तीनों लोक काँप उठते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -377,6 +448,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "भूत-पिसाच पास नहीं आते, जब महाबीर का नाम सुनते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -388,6 +461,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "नासा रोग और सब पीरा दूर होते हैं — हनुमत बीरा के निरंतर जप से।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -399,6 +474,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "संकट से हनुमान छुड़ा लेते हैं, जो मन, क्रम, वचन और ध्यान लगा ले।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -410,6 +487,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "सब पर राम तपस्वी राजा हैं; उनके सारे काज आप साजा सँवार देते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -421,6 +500,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जो कोई भी कोई मनोरथ लेकर आए, उसे अमित जीवन का फल ही मिलेगा।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -432,6 +513,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "चारों युग में आपका परताप है — संसार में आपकी सिद्धि प्रसिद्ध है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -443,6 +526,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "साधुओं और संतों के आप रक्षक हैं; असुरों के निकंदन, और राम के दुलारे।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -454,6 +539,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "आठ सिद्धियाँ और नौ निधियाँ देने वाले — ऐसा ही जानकी माता ने वर दिया है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -465,6 +552,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "राम-रसायन आपके पास है; सदा रघुपति के दास बने रहिए।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -476,6 +565,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "आपके भजन से राम को पहुँचे, और जन्म-जन्म के दुख बिसर जाएँ।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -487,6 +578,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "अंतकाल में रघुबर के पुर जाते हैं, जहाँ जन्म को हरि-भक्त कहा जाता है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -498,6 +591,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "और देवता उनका चित्त नहीं रखते; हनुमान से ही सब सुख करते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -509,6 +604,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "संकट कटते हैं और सब पीरा मिटती है, जो हनुमान बलबीर को सुमिरते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -520,6 +617,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जय जय जय हनुमान गोसाईं, कृपा करहु गुरुदेव की नाईं — यह प्रार्थना है, और यही अंत भी।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -531,6 +630,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जो कोई सौ बार पाठ करे, उसे महा सुख मिलते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -542,6 +643,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "जो यह चालीसा पढ़े, उसे सिद्धि मिलती है और गौरीसा यानी शिव उसके साक्षी बनते हैं।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -553,6 +656,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "तुलसीदास का समर्पण — सदा हरि की सेवा में रहना और अपना निवास उनके हृदय में बनाना।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -564,6 +669,8 @@ export const VERSES: Verse[] = [
     ],
     meaning:
       "समापन का दोहा — हनुमान जी मंगल यानी शुभ रूप में रहते हैं; राम, लक्ष्मन और सीता सहित उनका हृदय में विराज है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -575,6 +682,8 @@ export const VERSES: Verse[] = [
     chant: "ॐ हनुमते नमः",
     meaning:
       "हनुमान जी को नमस्कार। शांत मन से, एक बार — यह छोटा मंत्र पूजा का आख़िरी कदम है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
   {
@@ -586,6 +695,8 @@ export const VERSES: Verse[] = [
     chant: "ॐ अंजनी कुमाराय स्वाहा",
     meaning:
       "अंजनी-कुमार को समर्पित मंत्र। जो किसी परंपरा में इसे जपते हैं, वह उन्हीं के अनुसार माना जाएगा — अभी इसकी पुष्टि बाकी है।",
+    /** अर्थ अभी जाँचा नहीं गया — इसलिए स्क्रीन पर नहीं दिखता */
+    meaningReviewed: false,
     verified: PENDING,
   },
 ];
