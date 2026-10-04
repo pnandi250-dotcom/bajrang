@@ -1,26 +1,19 @@
 /* English translation — src/lib/content.ts (VERSES, HOPE_MESSAGES, SANKALP_MESSAGES).
  * `lines` stay in the original Devanagari — they are quotations, not text to translate. */
 
-export const VERSE_EN: Record<string, { source: string; meaning: string }> = {
-  "chalisa-doha-1": {
-    source: "Hanuman Chalisa — Opening Doha",
-    meaning:
-      "Hanuman taught that the mind should be pressed into the dust of the guru's feet just as he did it himself — only then does every worry of life fall away.",
+export const VERSE_EN: Record<string, {
+ source: string; meaning: string }> = {
+  "aarti-doha-1": {
+    source: "Hanuman aarti — opening doha",
+    meaning: "Hanuman teaches us: polish the mind with the dust of the guru's feet the way a mirror is polished to show the self. Without that, meeting the divine is not possible.",
   },
   "chalisa-chaupai-1": {
-    source: "Hanuman Chalisa — Chaupai",
-    meaning:
-      "Wherever Hanuman was born, distress never even got the chance to arrive there. This is the first thought of the Chalisa.",
+    source: "Hanuman Chalisa — opening chaupai",
+    meaning: "Victory to Hanuman, the ocean of wisdom and virtue, radiant in all three worlds.",
   },
-  "chalisa-chaupai-1b": {
-    source: "Hanuman Chalisa — Chaupai",
-    meaning:
-      "Where Hanuman is, a light like a lamp keeps burning — so even the hardest sorrow cannot stay there.",
-  },
-  "chalisa-chaupai-2": {
-    source: "Hanuman Chalisa — Chaupai",
-    meaning:
-      "Whatever mind and strength can manage, the strength of heart and soul is far above it — and yet where Hanuman is not with you, very great difficulty comes all at once.",
+  "aarti-1b": {
+    source: "Hanuman aarti — chaupai",
+    meaning: "Victory to Hanuman, who opens the hardest paths and whose strength knows no limit.",
   },
   "chalisa-chaupai-3": {
     source: "Hanuman Chalisa — Chaupai",
@@ -31,11 +24,6 @@ export const VERSE_EN: Record<string, { source: string; meaning: string }> = {
     source: "Hanuman Chalisa — Chaupai",
     meaning:
       "Hanuman grants the wishes of every heart and makes the enemy tremble at a single word — by his grace sorrow simply melts away.",
-  },
-  "chalisa-chaupai-4": {
-    source: "Hanuman Chalisa — Chaupai",
-    meaning:
-      "Hanuman sang his own praises only over Rama's name, and said — whoever recites it a hundred times, let my praises be sung to them as well.",
   },
   "chalisa-chaupai-5": {
     source: "Hanuman Chalisa — Chaupai",
@@ -56,11 +44,6 @@ export const VERSE_EN: Record<string, { source: string; meaning: string }> = {
     source: "Hanuman Chalisa — Chaupai",
     meaning:
       "The world filled with sorrow is very terrible — and yet you save every living being.",
-  },
-  "chalisa-chaupai-9": {
-    source: "Hanuman Chalisa — Chaupai",
-    meaning:
-      "You lit the lamp of the Supreme Being in all the nine parts of the earth and wiped out wickedness like deceit, attachment and cheating. You guard people everywhere.",
   },
   "chalisa-chaupai-10": {
     source: "Hanuman Chalisa — Chaupai",
@@ -101,16 +84,6 @@ export const VERSE_EN: Record<string, { source: string; meaning: string }> = {
     source: "Hanuman Chalisa — Tulsidas's Closing",
     meaning:
       "Tulsidas says — I will always stay in the service of Sri Rama and tie the thread of his love around my heart. The same plea that was made at the beginning is repeated here.",
-  },
-  "aarti-1": {
-    source: "Not Hanuman Chalisa — Hanuman Aarti",
-    meaning:
-      "This is not part of the Chalisa, it is Hanuman's aarti — the ocean of knowledge and virtue, who shines in all three worlds.",
-  },
-  "aarti-2": {
-    source: "Not Hanuman Chalisa — Hanuman Aarti",
-    meaning:
-      "This too is a line of the aarti — praise of Hanuman, who opens the most difficult paths and whose strength has no equal.",
   },
   "mantra-1": {
     source: "Mantra — Rama's Messenger",

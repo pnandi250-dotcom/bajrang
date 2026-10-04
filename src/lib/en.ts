@@ -295,4 +295,17 @@ export const EN: Record<string, string> = {
   /* ---------- language-specific note (third language) ---------- */
   "English screen, but the verses stay in the original Devanagari":
     "English screen, but the verses stay in the original Devanagari",
+
+  /* ---------- पंक्तियों की जाँच दिखाना ---------- */
+  "जाँच बाकी": "Not checked yet",
+  "यह पंक्ति किसी प्रामाणिक संस्करण से मिलान कर जाँची नहीं गई है।": "This line has not been checked word for word against a published edition.",
+  "पंक्तियों की जाँच": "Verse review",
+  "{done} / {total} पंक्तियाँ किसी प्रमाणिक संस्करण से मिलान कर जाँची गई हैं।": "{done} of {total} lines have been checked word for word against a published edition.",
+  "अभी कोई पंक्ति जाँची नहीं गई। इसलिए हर पंक्ति के साथ “जाँच बाकी” का निशान दिखता है — ताकि कोई पाठ ग़लती से प्रामाणिक न समझ ले।": "No line has been checked yet. That is why every line carries a “Not checked yet” mark — so no text is mistaken for verified scripture.",
+  "जो पंक्तियाँ किसी रचना से नहीं मिलीं, वे हटा दी गई हैं। अब सिर्फ़ वही दिखता है": "Lines that could not be matched to a known work have been removed. What remains",
+  "जो स्रोत से जुड़ा हो — पर वह भी अभी अलिज्ञात स्रोत पर टिका है, तब तक जब तक जाँच न हो।": "is attributed to a source, but that attribution is still unconfirmed until someone checks it.",
+  "पूरी सूची और जाँच का तरीका: CONTENT-REVIEW.md (रिपॉज़िटरी में)।": "The full list and how to check it: CONTENT-REVIEW.md (in the repository).",
+
+  /* ---------- प्रसंग-निशान ---------- */
+  "प्रारूप — जाँच बाकी": "Draft — not checked yet",
 };

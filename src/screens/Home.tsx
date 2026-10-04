@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { hopeOfDay, verseOfDay } from "../lib/content";
+import { VERSE_PENDING_NOTE, hopeOfDay, verseOfDay } from "../lib/content";
 import { KATHA_TOTAL, plan } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
@@ -284,6 +284,11 @@ export function Home({
           ))}
         </p>
         <p className="mt-3 text-sm leading-[1.85] text-ink-500">{verse.meaning}</p>
+        {verse.verified ? null : (
+          <p className="mt-3 rounded-2xl bg-gold-200/60 px-4 py-2.5 text-xs leading-[1.75] text-ink-700">
+            <b className="text-gold-700">{t("जाँच बाकी")}</b> {t(VERSE_PENDING_NOTE)}
+          </p>
+        )}
       </Card>
 
       {/* उम्मीद का संदेश + संकल्प */}

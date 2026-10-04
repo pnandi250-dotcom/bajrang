@@ -249,6 +249,11 @@ export function Ritual({
           <p className="rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold tracking-[0.14em] text-gold-200 uppercase">
             {verse.source}
           </p>
+          {verse.verified ? null : (
+            <p className="-mt-4 text-[11px] font-bold tracking-[0.12em] text-cream-300/80 uppercase">
+              {t("जाँच बाकी")}
+            </p>
+          )}
 
           <div className="flex w-full flex-col items-center gap-4">
             {steps.map((step, index) => {

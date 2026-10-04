@@ -21,6 +21,7 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
+import { verseCheckStats } from "../lib/content";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
 import { playChime } from "../lib/audio";
@@ -38,6 +39,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const [nativeScheduled, setNativeScheduled] = useState(false);
   const [exactAlarm, setExactAlarm] = useState<"granted" | "denied" | "unknown">("unknown");
   const caps = capabilities();
+  const verseStats = verseCheckStats();
   const native = isNative();
 
   useEffect(() => {
@@ -364,6 +366,28 @@ export function Settings({ onReset }: { onReset: () => void }) {
       <Card className="mt-4">
         <SectionTitle hindi="भाषा" english="Language" />
         <LanguagePicker variant="full" />
+      </Card>
+
+      <Card className="mt-4 border-gold-300 bg-gold-200/30">
+        <SectionTitle hindi="पंक्तियों की जाँच" english="Verse review status" />
+        <p className="text-sm leading-[1.85] text-ink-700">
+          {fmt("{done} / {total} पंक्तियाँ किसी प्रमाणिक संस्करण से मिलान कर जाँची गई हैं।", {
+            done: toNativeDigits(verseStats.done),
+            total: toNativeDigits(verseStats.total),
+          })}
+        </p>
+        <p className="mt-2 text-sm leading-[1.85] text-ink-700">
+          {t(
+            "अभी कोई पंक्ति जाँची नहीं गई। इसलिए हर पंक्ति के साथ “जाँच बाकी” का निशान दिखता है — ताकि कोई पाठ ग़लती से प्रामाणिक न समझ ले।",
+          )}
+        </p>
+        <p className="mt-3 text-xs leading-[1.85] text-ink-500">
+          {t("जो पंक्तियाँ किसी रचना से नहीं मिलीं, वे हटा दी गई हैं। अब सिर्फ़ वही दिखता है")}
+          {t("जो स्रोत से जुड़ा हो — पर वह भी अभी अलिज्ञात स्रोत पर टिका है, तब तक जब तक जाँच न हो।")}
+        </p>
+        <p className="mt-3 text-xs leading-[1.85] text-ink-500">
+          {t("पूरी सूची और जाँच का तरीका: CONTENT-REVIEW.md (रिपॉज़िटरी में)।")}
+        </p>
       </Card>
 
       <Card className="mt-4">

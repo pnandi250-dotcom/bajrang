@@ -184,6 +184,11 @@ function EpisodeRow({
           <span className="block text-base font-extrabold text-ink-900">
             {entry.title}
           </span>
+          {entry.episode && !entry.episode.reviewed ? (
+            <span className="mt-0.5 block text-[10px] font-bold tracking-[0.1em] text-gold-700 uppercase">
+              {t("प्रारूप — जाँच बाकी")}
+            </span>
+          ) : null}
           {entry.episode ? (
             <span className="mt-0.5 block text-xs text-ink-500">
               {entry.episode.story[0].slice(0, 46)}…
