@@ -308,4 +308,17 @@ export const EN: Record<string, string> = {
 
   /* ---------- प्रसंग-निशान ---------- */
   "प्रारूप — जाँच बाकी": "Draft — not checked yet",
+
+  /* ---------- पाठ-स्रोत ---------- */
+  "{done} / {total} पंक्तियाँ अक्षर-अक्षर जाँची गई हैं।": "{done} of {total} lines have been checked word for word.",
+  "पाठ कहाँ से आया": "Where the text comes from",
+  "पूरा पाठ याद से नहीं, प्रकाशित स्रोत से उतारा गया है —": "The whole text was copied from a published source, not written from memory —",
+  "(संस्करण:": "(edition:",
+  "खोज की तारीख:": "Retrieved:",
+  "क्या अभी बाकी है": "What is still outstanding",
+  "पाठ:": "Text:",
+  "तीन अलग स्रोतों से मिलाया गया; जहाँ अक्षर-भेद हैं वहाँ एक रूप चुना है। पूरी सूची CONTENT-REVIEW.md में है — विद्वान पाठक तय करें।": "cross-checked against three independent sources; where they differ, one reading was chosen. The full list is in CONTENT-REVIEW.md for a knowledgeable reader to settle.",
+  "अर्थ:": "Meanings:",
+  "पंक्ति जो कहती है उसी का सार लिखा है, पर यह मेरा अपना लेखन है और जाँचा नहीं गया।": "each one describes the lines it sits under, but these are my own words and have not been checked.",
+  "इसीलिए हर पंक्ति के साथ “जाँच बाकी” दिखता है — कोई पाठ ग़लती से प्रामाणिक न समझ ले। जाँच पूरी होने पर यह निशान हट जाएगा।": "That is why every line carries a \"Not checked yet\" mark — so no text is taken for verified scripture. The mark disappears when the review is done.",
 };
