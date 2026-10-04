@@ -16,7 +16,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-3": {
     source: "Hanuman Chalisa — Chaupai 1",
     meaning:
-      "Victory to Hanuman, the ocean of knowledge and virtue, radiant in all three worlds — Kapis, that is the son of Pavan.",
+      "Victory to Hanuman, the ocean of knowledge and virtue, radiant in all three worlds — Kapis, the lord of the monkeys.",
   },
   "chalisa-4": {
     source: "Hanuman Chalisa — Chaupai 2",
@@ -76,7 +76,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-15": {
     source: "Hanuman Chalisa — Chaupai 13",
     meaning:
-      "Singing the praises of a thousand forms, he said to Shreepati — what is there besides you to be sung — and gave his own voice to the song.",
+      "Sheshnag sang his praise with a thousand mouths, and Lord Rama said just this and embraced him.",
   },
   "chalisa-16": {
     source: "Hanuman Chalisa — Chaupai 14",
@@ -101,7 +101,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-20": {
     source: "Hanuman Chalisa — Chaupai 18",
     meaning:
-      "Countless ages and a thousand kos away, he caught the sun as if it were only a game, and tasted its sweet fruit.",
+      "A thousand yojanas away, he swallowed the sun, taking it for a sweet fruit.",
   },
   "chalisa-21": {
     source: "Hanuman Chalisa — Chaupai 19",
@@ -126,7 +126,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-25": {
     source: "Hanuman Chalisa — Chaupai 23",
     meaning:
-      "By your own splendour all three worlds cry out and tremble.",
+      "You alone appraise your own splendour; at your roar all three worlds tremble.",
   },
   "chalisa-26": {
     source: "Hanuman Chalisa — Chaupai 24",
@@ -151,7 +151,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-30": {
     source: "Hanuman Chalisa — Chaupai 28",
     meaning:
-      "Whoever brings a wish, he alone will receive the fruit of endless life from Amit.",
+      "Whoever comes with any wish at all receives the fruit of endless life.",
   },
   "chalisa-31": {
     source: "Hanuman Chalisa — Chaupai 29",
@@ -211,7 +211,7 @@ export const VERSE_EN: Record<string, {
   "chalisa-42": {
     source: "Hanuman Chalisa — Chaupai 40",
     meaning:
-      "The offering of Tulsidas — to stay always in Hari's service and to tie the thread of his love around the heart.",
+      "Tulsidas's offering: to stay always in Hari's service and to make his home in my heart.",
   },
   "chalisa-43": {
     source: "Hanuman Chalisa — Closing Doha",
