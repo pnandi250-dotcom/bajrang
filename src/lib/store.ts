@@ -8,6 +8,7 @@ import {
   devotionalDateKey,
   fromDateKey,
   isHanumanDay,
+  isValidDateKey,
   toDateKey,
 } from "./date";
 
@@ -107,20 +108,20 @@ function sanitize(raw: unknown): AppState {
     : "06:00";
   profile.chantingEnabled = profile.chantingEnabled !== false;
 
+  // यहाँ सिर्फ़ असली तारीखें रखी जाती हैं — `2026-13-45` जैसी चीज़ Date पलटकर
+  // किसी दूसरी तारीख बना देती है, और फिर स्ट्रीक गढ़ी जा सकती है।
   const completedDates = Array.isArray(input.completedDates)
-    ? Array.from(new Set(input.completedDates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)))).sort()
+    ? Array.from(new Set(input.completedDates.filter(isValidDateKey))).sort()
     : [];
-  const lastCompleted =
-    typeof input.lastCompleted === "string" && /^\d{4}-\d{2}-\d{2}$/.test(input.lastCompleted)
-      ? input.lastCompleted
-      : (completedDates.at(-1) ?? null);
+  const lastCompleted = isValidDateKey(input.lastCompleted)
+    ? input.lastCompleted
+    : (completedDates.at(-1) ?? null);
 
   const graceDays = Number.isFinite(input.graceDays)
     ? Math.min(GRACE_MAX, Math.max(0, Math.floor(input.graceDays as number)))
     : 0;
 
-  const dateKey = (value: unknown): string | null =>
-    typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+  const dateKey = (value: unknown): string | null => (isValidDateKey(value) ? value : null);
 
   const pausedUntil = dateKey(input.pausedUntil);
   const pausedFrom = dateKey(input.pausedFrom);
@@ -185,27 +186,36 @@ function commit(next: AppState) {
   emit();
 }
 
-function subscribe(listener: () => void) {
+/** बदलाव की सूचना — React के बाहर भी इस्तेमाल हो सकती है */
+export function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
-export function useAppState(): AppState {
-  return useSyncExternalStore(subscribe, () => state, () => state);
+/** कच्ची स्थिति — React के बाहर भी पढ़ी जा सकती है (परीक्षण, बैकअप) */
+export function getState(): AppState {
+  return state;
 }
 
-export function useDerivedState() {
-  const raw = useAppState();
-
+/** गिनती-सहित की स्थिति — यही UI दिखाता है */
+export function getDerived(): DerivedState {
+  const raw = state;
   // पूजा का दिन 3:00 बजे से शुरू होता है
   const view = streakView(raw, devotionalDateKey());
-
   return {
     ...raw,
     ...view,
     bestStreak: Math.max(raw.bestStreak, view.streak, raw.streakAtPause),
     isSpecialDay: isHanumanDay(fromDateKey(view.todayKey)),
   };
+}
+
+export function useAppState(): AppState {
+  return useSyncExternalStore(subscribe, getState, getState);
+}
+
+export function useDerivedState(): DerivedState {
+  return useSyncExternalStore(subscribe, getDerived, getDerived);
 }
 
 /**
@@ -224,7 +234,7 @@ function forgivenInGap(
   return Math.min(Math.max(0, daysBetween(lastCompleted, forgivenUntil)), gapDays);
 }
 
-type StreakView = {
+export type StreakView = {
   todayKey: string;
   doneToday: boolean;
   /** पिछली पूजा के बाद के सारे छूटे दिन (आज शामिल नहीं) */
@@ -290,7 +300,9 @@ function streakView(state: AppState, todayKey: string): StreakView {
   };
 }
 
-export type DerivedState = ReturnType<typeof useDerivedState>;
+/** UI को दिखने वाली पूरी स्थिति — कच्ची स्थिति + गिनती */
+export type DerivedState = AppState &
+  StreakView & { bestStreak: number; isSpecialDay: boolean };
 
 export type KathaReveal = PlanEntry;
 
@@ -343,6 +355,9 @@ export const actions = {
       const katha = revealKatha();
       commit({
         ...state,
+        // यह भी दर्ज करो — वरना विश्राम में उसी दिन दो बार पूजा करने पर
+        // कथा और यात्रा दो-दो बार बढ़ जाती है।
+        lastCompleted: todayKey,
         totalCompleted: state.totalCompleted + 1,
         completedDates: [...state.completedDates, todayKey].slice(-400),
         chalisaRead: Math.min(chalisaUnitCount(), state.chalisaRead + 1),
@@ -443,7 +458,16 @@ export const actions = {
 
   /** Devotional apps should always offer a way back — used by Settings. */
   resetAll() {
-    commit({ ...DEFAULT_STATE, profile: { ...state.profile, createdAt: toDateKey(new Date()), onboarded: true } });
+    // सचमुच नया शुरुआत — नाम और संकल्प भी मिट जाते हैं, जैसा सेटिंग्स में लिखा है।
+    // `onboarded` सच रहता है ताकि दोबारा परिचय न दिखे; स्ट्रीक शून्य से शुरू होती है।
+    commit({
+      ...DEFAULT_STATE,
+      profile: {
+        ...DEFAULT_STATE.profile,
+        createdAt: toDateKey(new Date()),
+        onboarded: true,
+      },
+    });
   },
 };
 

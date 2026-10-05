@@ -7,3 +7,15 @@ dev-dist
 !.vscode/extensions.json
 .idea
 *.log
+
+# जाँच के लिए उतारी गई तीसरे पक्ष की वेबसाइटें (फ़ाइक्स्चर commit है, HTML नहीं)
+scripts/checks/chalisa/*.html
+
+# Android signing — कभी commit नहीं
+*.keystore
+*.jks
+keystore.properties
+bajrang-release.keystore
+
+# Vitest कवरेज
+coverage/

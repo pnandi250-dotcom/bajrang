@@ -129,6 +129,18 @@ export function fromDateKey(key: string): Date {
   return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
 
+/**
+ * क्या यह तारीख सच में मौजूद है? `2026-13-45` जैसी चीज़ `Date` ख़ुद
+ * पलटकर किसी दूसरी तारीख बना देती है — इसलिए यह जाँच ज़रूरी है, वरना एक
+ * टूटी हुई लोड-स्टेट चुपचाप स्ट्रीक गढ़ा सकती है।
+ */
+export function isValidDateKey(key: unknown): key is string {
+  if (typeof key !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(key)) return false;
+  const [, m, d] = key.split("-").map(Number);
+  if (m < 1 || m > 12 || d < 1 || d > 31) return false;
+  return toDateKey(fromDateKey(key)) === key;
+}
+
 export function addDays(date: Date, days: number): Date {
   const next = new Date(date);
   next.setDate(next.getDate() + days);

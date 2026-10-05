@@ -238,7 +238,7 @@ export function Ritual({
           </span>
           <button
             type="button"
-            onClick={() => setSound((prev) => !prev)}
+            onClick={() => setSound((prev: boolean) => !prev)}
             aria-label={sound ? t("आवाज़ बंद करें") : t("आवाज़ चालू करें")}
             className="pressable grid h-10 w-10 place-items-center rounded-full bg-white/12 text-lg backdrop-blur-sm"
           >
