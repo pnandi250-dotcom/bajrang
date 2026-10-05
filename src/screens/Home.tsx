@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { VERSE_PENDING_NOTE, hopeOfDay, verseOfDay } from "../lib/content";
+import { VERSE_PENDING_NOTE, chalisaYatra, hopeOfDay } from "../lib/content";
 import { KATHA_TOTAL, plan, publishedCount, writtenCount } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
@@ -36,7 +36,10 @@ export function Home({
   // "आज" का मतलब पूजा का दिन — रात 3 बजे के बाद यह कल हो जाता है
   const today = useMemo(() => calendarDateForDevotionalDay(), []);
   const lang = useLang();
-  const verse = useMemo(() => verseOfDay(today, lang), [today, lang]);
+  // चालीसा यात्रा — पूजा के बाद एक-एक चौपाई, क्रम से
+  const yatra = useMemo(() => chalisaYatra(state.chalisaRead, lang), [state.chalisaRead, lang]);
+  // यात्रा शुरू होने से पहले भी पहली इकाई दिखाई दे — कल क्या आएगा, यह पता होना चाहिए
+  const verse = yatra.today ?? chalisaYatra(0, lang).today;
   const hope = useMemo(() => hopeOfDay(today, lang), [today, lang]);
   const specialDay = hanumanDayName(today);
   const firstName = state.profile.name.trim().split(" ")[0] ?? "";
@@ -271,10 +274,14 @@ export function Home({
         </Card>
       </button>
 
-      {/* आज का श्लोक */}
+      {/* चालीसा यात्रा — आज की चौपाई और कल का इशारा */}
       <Card className="mt-5">
         <Eyebrow>
-          {t("आज का श्लोक")} · {verse.source}
+          {t("चालीसा यात्रा")} ·{" "}
+          {fmt("{r} / {n}", {
+            r: toNativeDigits(yatra.read),
+            n: toNativeDigits(yatra.total),
+          })}
         </Eyebrow>
         <p className="mt-3 text-[17px] leading-[1.9] font-bold text-ink-900">
           {verse.lines.map((line) => (
@@ -292,8 +299,21 @@ export function Home({
           </p>
         )}
         {verse.verified ? null : (
-          <p className="mt-3 rounded-2xl bg-gold-200/60 px-4 py-2.5 text-xs leading-[1.75] text-ink-700">
+          <p className="mt-2 rounded-2xl bg-gold-200/60 px-4 py-2.5 text-xs leading-[1.75] text-ink-700">
             <b className="text-gold-700">{t("जाँच बाकी")}</b> {t(VERSE_PENDING_NOTE)}
+          </p>
+        )}
+
+        {yatra.read > 0 && yatra.next ? (
+          <p className="mt-3 border-t border-saffron-200 pt-3 text-sm leading-[1.8] text-ink-700">
+            <b className="text-saffron-700">
+              {t("कल:")} {yatra.next.label}
+            </b>
+            <span className="block text-xs text-ink-500">“{yatra.next.teaser}”</span>
+          </p>
+        ) : (
+          <p className="mt-3 border-t border-saffron-200 pt-3 text-sm leading-[1.8] font-semibold text-ink-900">
+            {t("चालीसा यात्रा पूरी हुई — सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।")}
           </p>
         )}
       </Card>
@@ -359,6 +379,17 @@ export function Home({
 
       {/* याद दिलाने की नम्र सलाह — नीचे, ताकि पूजा का बटन साफ़ रहे */}
       <ReminderNudge onOpenSettings={onOpenSettings} />
+
+      {yatra.read === 0 && yatra.firstUnit ? (
+        <Card className="mt-4 border-saffron-200 bg-cream-200/60">
+          <p className="text-sm leading-[1.85] font-semibold text-ink-900">
+            {t("आज की पूजा के बाद चालीसा यात्रा शुरू होगी")}
+          </p>
+          <p className="mt-1 text-xs leading-[1.8] text-ink-500">
+            {t("पहली इकाई:")} {yatra.firstUnit.label} · “{yatra.firstUnit.teaser}”
+          </p>
+        </Card>
+      ) : null}
 
       <p className="mt-6 text-center text-xs leading-relaxed text-ink-500">
         {t("जय बजरंगबली 🙏 — प्रेम और अनुशासन, रोज़ एक मिनट")}

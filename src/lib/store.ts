@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { KATHA_TOTAL, plan, type PlanEntry } from "./katha";
+import { chalisaUnitCount } from "./content";
 import {
   addDays,
   calendarDateForDevotionalDay,
@@ -54,6 +55,8 @@ export type AppState = {
   forgivenUntil: string | null;
   /** रुकते समय का स्ट्रीक, लौटने पर यहीं से आगे बढ़ेगा */
   streakAtPause: number;
+  /** चालीसा यात्रा — अब तक पूरी हुई चौपाइयों की संख्या (हर पूजा के बाद +1) */
+  chalisaRead: number;
   /** कथा में अब तक खुले प्रसंग — हर पूजा के बाद एक नया */
   kathaRevealed: number;
   /** जिस प्रसंग तक पहुँचे (पढ़ा), वह सबसे बड़ा संख्या */
@@ -88,6 +91,7 @@ const DEFAULT_STATE: AppState = {
   pausedFrom: null,
   forgivenUntil: null,
   streakAtPause: 0,
+  chalisaRead: 0,
   kathaRevealed: 0,
   kathaRead: 0,
 };
@@ -147,6 +151,7 @@ function sanitize(raw: unknown): AppState {
     streakAtPause: Number.isFinite(input.streakAtPause)
       ? Math.max(0, Math.floor(input.streakAtPause as number))
       : 0,
+    chalisaRead: Math.min(chalisaUnitCount(), Math.max(0, Math.floor(Number(input.chalisaRead) || 0))),
     kathaRevealed: clampKatha(input.kathaRevealed),
     kathaRead: Math.min(clampKatha(input.kathaRevealed), clampKatha(input.kathaRead)),
   };
@@ -340,6 +345,7 @@ export const actions = {
         ...state,
         totalCompleted: state.totalCompleted + 1,
         completedDates: [...state.completedDates, todayKey].slice(-400),
+        chalisaRead: Math.min(chalisaUnitCount(), state.chalisaRead + 1),
         kathaRevealed: state.kathaRevealed + (katha ? 1 : 0),
       });
       return {
@@ -387,6 +393,7 @@ export const actions = {
       pausedFrom: null,
       forgivenUntil: null,
       streakAtPause: newStreak,
+      chalisaRead: Math.min(chalisaUnitCount(), state.chalisaRead + 1),
       kathaRevealed: state.kathaRevealed + (katha ? 1 : 0),
     });
 

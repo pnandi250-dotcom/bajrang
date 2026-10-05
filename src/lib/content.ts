@@ -720,9 +720,47 @@ export const HOPE_MESSAGES: string[] = [
 ];
 
 /** भाषा के हिसाब से संदेश — बंगाली में क्रम वही रहेगा */
-export function verseOfDay(date: Date, lang: Lang = getLang()): VerseView {
-  const key = date.getFullYear() * 372 + date.getMonth() * 31 + date.getDate();
-  return verseView(VERSES[key % VERSES.length], lang);
+/** चालीसा की चौपाइयाँ/दोहे — यात्रा में यही क्रम से पढ़े जाते हैं (मंत्र अलग) */
+const YATRA = VERSES.filter((verse) => verse.id.startsWith("chalisa-"));
+
+/** कल की पंक्ति का इशारा — पूरी पंक्ति नहीं, बस पहले कुछ शब्द */
+function teaserOf(verse: Verse): string {
+  const words = verse.lines[0].split(/\s+/).slice(0, 4).join(" ");
+  return `${words}…`;
+}
+
+/** यात्रा में कुल कितनी इकाइयाँ हैं */
+export function chalisaUnitCount(): number {
+  return YATRA.length;
+}
+
+/**
+ * चालीसा यात्रा — पूजा के बाद एक-एक चौपाई।
+ * `read` = अब तक पूरी हुई चौपाइयों की संख्या (पूजा के साथ बढ़ती है)।
+ */
+export function chalisaYatra(read: number, lang: Lang = getLang()) {
+  const total = YATRA.length;
+  const done = Math.min(Math.max(0, Math.floor(read)), total);
+  // पूजा से पहले भी पहली इकाई दिखती है (भविष्य का इशारा)
+  const currentIndex = done > 0 ? done - 1 : 0;
+  const today = verseView(YATRA[currentIndex], lang);
+  // अगली इकाई — यात्रा शुरू होने से पहले भी (पहली पूजा का इशारा)
+  const nextVerse = done < total ? YATRA[done] : null;
+  return {
+    total,
+    read: done,
+    today,
+    next: nextVerse
+      ? {
+          n: done + 1,
+          label: nextVerse.source,
+          teaser: teaserOf(nextVerse),
+        }
+      : null,
+    complete: done >= total,
+    /** घंटी बजने के बाद दिखने वाला इशारा, जब तक यात्रा पूरी न हो */
+    firstUnit: YATRA[0] ? { label: YATRA[0].source, teaser: teaserOf(YATRA[0]) } : null,
+  };
 }
 
 export function hopeOfDay(date: Date, lang: Lang = getLang()): string {

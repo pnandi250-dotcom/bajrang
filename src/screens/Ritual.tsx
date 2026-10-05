@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHALISA_SOURCE, verseOfDay } from "../lib/content";
+import { CHALISA_SOURCE, chalisaYatra, type VerseView } from "../lib/content";
 import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/audio";
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
 import { actions, useDerivedState, type KathaReveal } from "../lib/store";
 import { KATHA_TOTAL } from "../lib/katha";
 import { useLang, useT } from "../lib/i18n";
-import { calendarDateForDevotionalDay, toNativeDigits } from "../lib/date";
+import { toNativeDigits } from "../lib/date";
 import { Button } from "../components/ui/Button";
 import { ProgressRing } from "../components/ui/ProgressRing";
 import { ShareCardSheet } from "../components/ShareCardSheet";
@@ -26,7 +26,7 @@ type TimedStep = Step & { duration: number };
  * पूजा को टुकड़ों में बाँट देना, ताकि मिनट खाली न लगे —
  * हर पंक्ति अपनी-अपनी बारी आती है और ध्यान बँटता नहीं।
  */
-function buildSteps(verse: ReturnType<typeof verseOfDay>): TimedStep[] {
+function buildSteps(verse: VerseView): TimedStep[] {
   const steps: Step[] = verse.lines.map((text) => ({ kind: "line", text, weight: 1 }));
   if (verse.meaning) {
     steps.push({ kind: "meaning", text: verse.meaning, weight: 2.1 });
@@ -59,7 +59,9 @@ export function Ritual({
   const state = useDerivedState();
   const t = useT();
   const lang = useLang();
-  const verse = useMemo(() => verseOfDay(calendarDateForDevotionalDay(), lang), [lang]);
+  // चालीसा यात्रा — पूजा के बाद जो चौपाई पूरी हुई, वही आज की
+  const yatra = useMemo(() => chalisaYatra(state.chalisaRead, lang), [state.chalisaRead, lang]);
+  const verse = yatra.today ?? chalisaYatra(0, lang).today;
   const steps = useMemo(() => buildSteps(verse), [verse]);
 
   const [phase, setPhase] = useState<Phase>("sound");
@@ -248,6 +250,11 @@ export function Ritual({
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 py-4">
           <p className="mx-4 max-w-sm rounded-2xl bg-black/15 px-4 py-2 text-center text-[11px] leading-[1.7] text-cream-300/90">
             {t("पाठ:")} {CHALISA_SOURCE.edition} · {t("अर्थ अभी छिपा हुआ है — जाँच होने पर ही दिखेगा।")}
+            {yatra.next ? (
+              <span className="mt-1 block">
+                {t("पूजा के बाद:")} {yatra.next.label} · “{yatra.next.teaser}”
+              </span>
+            ) : null}
           </p>
           <p className="rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold tracking-[0.14em] text-gold-200 uppercase">
             {verse.source}
@@ -426,6 +433,20 @@ export function Ritual({
           ) : null}
 
           {kathaCard}
+
+          {yatra.complete ? (
+            <div className="animate-rise mt-4 w-full rounded-3xl border border-gold-300 bg-gold-200/95 px-5 py-4 text-left text-ink-900">
+              <p className="text-[11px] font-bold tracking-[0.16em] text-gold-700 uppercase">
+                {t("चालीसा यात्रा पूरी")}
+              </p>
+              <p className="mt-1 text-lg font-extrabold">
+                {t("सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।")}
+              </p>
+              <p className="mt-1 text-xs leading-[1.8] text-ink-700">
+                {t("प्रसाद: जो मंत्र जाँचे गए, वे यहाँ मिलेंगे — अभी कोई जाँचा नहीं गया।")}
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-8 w-full space-y-3">
             <Button variant="gold" size="xl" block onClick={() => setShareOpen(true)}>

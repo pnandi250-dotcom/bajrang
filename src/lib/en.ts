@@ -354,4 +354,19 @@ export const EN: Record<string, string> = {
   /* ---------- अर्थ की गिनती ---------- */
   "{m} / {n} जाँचे गए — बाकी छिपे हैं।": "{m} of {n} reviewed — the rest are hidden.",
   "पंक्ति स्क्रीन पर है, पर जोड़ा गया यह अर्थ अभी भरोसेमंद नहीं — इसलिए दिखाया नहीं जा रहा।": "The line is on screen, but this explanation is not yet trustworthy, so it is not shown.",
+
+  /* ---------- चालीसा यात्रा ---------- */
+  "चालीसा यात्रा": "Chalisa yatra",
+  "{r} / {n}": "{r} / {n}",
+  "कल:": "Tomorrow:",
+  "चालीसा यात्रा पूरी हुई — सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।": "The Chalisa yatra is complete — all one hundred and eight units, all forty chaupais.",
+  "आज की पूजा के बाद चालीसा यात्रा शुरू होगी": "After today's worship the Chalisa yatra begins",
+  "पहली इकाई:": "First unit:",
+  "पूजा के बाद:": "After worship:",
+  "चालीसा यात्रा पूरी": "Chalisa yatra complete",
+  "सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।": "All one hundred and eight units, all forty chaupais.",
+  "प्रसाद: जो मंत्र जाँचे गए, वे यहाँ मिलेंगे — अभी कोई जाँचा नहीं गया।": "Prasad: reviewed mantras will appear here — none has been reviewed yet.",
+
+  /* ---------- यात्रा की गिनती (सेटिंग्स) ---------- */
+  "चालीसा यात्रा: {r} / {n}": "Chalisa yatra: {r} / {n}",
 };

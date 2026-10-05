@@ -21,7 +21,7 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
-import { CHALISA_SOURCE, meaningCheckStats, verseCheckStats } from "../lib/content";
+import { CHALISA_SOURCE, chalisaYatra, meaningCheckStats, verseCheckStats } from "../lib/content";
 import { publishedCount, writtenCount } from "../lib/katha";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
@@ -416,6 +416,12 @@ export function Settings({ onReset }: { onReset: () => void }) {
 
         <p className="mt-5 border-t border-gold-300/60 pt-4 text-sm leading-[1.85] font-semibold text-ink-900">
           {t("कथा का हाल")}
+        </p>
+        <p className="mt-1 text-sm leading-[1.85] font-semibold text-ink-900">
+          {fmt("चालीसा यात्रा: {r} / {n}", {
+            r: toNativeDigits(state.chalisaRead),
+            n: toNativeDigits(chalisaYatra(state.chalisaRead).total),
+          })}
         </p>
         <p className="mt-1 text-sm leading-[1.85] text-ink-700">
           {fmt("{w} प्रसंग लिखे गए हैं, {p} प्रकाशित। जाँच पूरी न होने तक कथा स्क्रीन पर नहीं दिखती — न प्रसंग, न उनका शीर्षक।", {
