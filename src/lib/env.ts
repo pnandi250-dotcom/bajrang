@@ -53,6 +53,15 @@ export function capabilities(): Capabilities {
 }
 
 /**
+ * चालीसा ऑडियो — योजना पूरी है (`docs/AUDIO-PLAN.md`), रिकॉर्डिंग नहीं।
+ * इसलिए झंडा आज बंद है; जब सही अनुमति वाली रिकॉर्डिंग तैयार हो, तब इसे चालू
+ * करना होगा — बटन तब तक दिखेगा ही नहीं।
+ */
+export function chalisaAudioEnabled(): boolean {
+  return import.meta.env.VITE_CHALISA_AUDIO_ENABLED === "1";
+}
+
+/**
  * सुरक्षित संदर्भ नहीं है तो यह बात साफ़ बताओ — वरना उपयोगकर्ता
  * "संदेश आया ही नहीं" कहकर निकल जाता है।
  */
