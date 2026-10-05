@@ -101,7 +101,7 @@ npm run cap:open
 | समय बदलने पर पुराना हटकर नया लगना | वही जगह — `cancel()` फिर `schedule()` |
 | संदेश दिखने की इजाज़त (Android 13+) | manifest: `POST_NOTIFICATIONS` |
 | ठीक समय पर पहुँचाने की अनुमति | manifest: `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM` |
-| फ़ोन बंद होने पर संदेश ज़िंदा रहना | manifest: `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK` |
+| फ़ोन बंद होने पर संदेश ज़िंदा रहना | manifest: `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`; रीबूट पर प्लगइन का अपना `LocalNotificationRestoreReceiver` संदेश दोबारा लगाता है (`docs/PLAY-PRELAUNCH.md`) |
 | Status bar का दीवे वाला आइकन | `android/.../res/drawable/ic_stat_icon.xml` |
 | Exact alarm न मिलने पर ऐप खुद पूछे | सेटिंग में "अनुमति देने के लिए खोलें" बटन |
 

@@ -32,31 +32,43 @@
 2. **`versionName` "1.0" → "0.2.0"** किया गया ताकि ऐप के भीतर दिखने वाला
    संस्करण (सेटिंग्स → "Bajrang · v0.2") और Play सूची एक जैसी रहे।
 
-## जो अभी भी ख़ुला है — रीबूट के बाद अलार्म
+## रीबूट के बाद अलार्म — यह ठीक से सेट है
 
-**समस्या:** फ़ोन दोबारा चालू होने पर पहले से लगे अलार्म मिट जाते हैं।
-`RECEIVE_BOOT_COMPLETED` घोषित तो है, पर उसे **कोई receiver नहीं सुनता**।
-इसलिए आज का व्यवहार यह है: *ऐप को एक बार खोलने पर* अनुष्ठान फिर से लग जाता है
-(`App.tsx` में `scheduleReminder` हर खोलने पर चलता है)। दिन भर बंद रहा तो अलार्म
-नहीं आएगा।
+**पिछले संस्करण की फ़ाइल यहाँ ग़लत थी।** उसमें लिखा था कि `RECEIVE_BOOT_COMPLETED`
+घोषित तो है पर उसे कोई receiver नहीं सुनता, और इसलिए अपना receiver तथा native Java
+का कोड लिखना पड़ेगा। **दोनों बातें ग़लत थीं।**
 
-**यहाँ से क्यों नहीं किया:** सही समाधान में native Java लिखना पड़ता है (receiver →
-Capacitor plugin द्वारा दोबारा schedule कराना), और वह बिना compiler के जाँचा नहीं
-जा सकता। गलत receiver भेजने से ऐप Play पर reject हो सकता है, इसलिए इसे जानबूझकर
-छोड़ा गया है — यहाँ तक कि स्थानीय रूप से काम करे।
+स्रोत देखिए — `@capacitor/local-notifications` (संस्करण **7.0.7**) अपने साथ
+receiver लेकर आता है:
 
-**जाने से पहले करना है:**
+- `node_modules/@capacitor/local-notifications/android/src/main/AndroidManifest.xml`
+  में `LocalNotificationRestoreReceiver` घोषित है, जो `BOOT_COMPLETED`,
+  `LOCKED_BOOT_COMPLETED` और `QUICKBOOT_POWERON` सुनता है।
+- वही फ़ाइल `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK` और `POST_NOTIFICATIONS`
+  भी घोषित करती है — Gradle का manifest-merger इन्हें हमारे APK में जोड़ देता है।
+- `LocalNotificationRestoreReceiver.java` रीबूट पर संरक्षित संदेशों को फिर से
+  शेड्यूल करता है; और जो समय रीबूट के दौरान बीत गया हो, उसे लगभग १५ सेकंड बाद
+  दिखा देता है।
 
-1. `android/app/src/main/res/xml/alarm_receiver.xml` बनाएँ —
-   `<receiver android:name=".AlarmBootReceiver" android:enabled="true"
-   android:exported="false"><intent-filter><action
-   android:name="android.intent.action.BOOT_COMPLETED" /></intent-filter></receiver>`
-2. `android/app/src/main/java/com/bajrang/app/AlarmBootReceiver.java` में
-   `onReceive` के भीतर `LocalNotifications` plugin की अनुमति जाँचकर असल
-   reschedule के लिए app का `MainActivity` चुपचाप खोलें — या Capacitor का
-   `AppRestartListener` उपयोग करें, ताकि JS का `scheduleReminder` दोबारा चले।
-3. **असली फ़ोन पर जाँचें:** फ़ोन बंद करके चालू कीजिए, 12 घंटे बाद देखिए कि संदेश
-   आया या नहीं; Android 12, 13 और 14+ तीनों पर।
+हमारा अनुष्ठान `LocalNotifications.schedule()` से लगता है (`src/lib/reminder.ts`),
+इसलिए वह इसी storage में संरक्षित होता है और रीबूट के बाद वापस आ जाता है।
+
+**इसलिए कोई custom receiver नहीं लिखना है।**
+
+### असली जाँच: असली फ़ोन पर
+
+यहाँ Java/SDK/adb नहीं है, इसलिए यह जाँच यहीं नहीं हो सकती। प्रकाशन से पहले:
+
+1. Android ऐप इंस्टॉल करें, रोज़ का संदेश चालू करें, "ठीक समय पर संदेश" वाली अनुमति
+   भी दे दें।
+2. **फ़ोन बंद करके चालू कीजिए।**
+3. अगली सुबह देखिए कि संदेश आया या नहीं।
+4. यदि न आए — तभी जाँच कीजिए: `adb shell dumpsys alarm | findstr bajrang`, और देखिए
+   कि `SCHEDULE_EXACT_ALARM` अनुमति सच में मिली है या नहीं (`Settings → Alarms &
+   reminders`)।
+
+**एक सीधी बात:** जो अनुमति माँगी जाती है वह "ठीक समय" वाली है; यदि उपयोगकर्ता ने
+मना कर दिया, तो संदेश देर से आ सकता है — यह ऐप की ग़लती नहीं, Android की नीति है।
 
 ## Play Store की दरस और चीज़ें (जाँचनी हैं, यहाँ नहीं होतीं)
 
@@ -73,5 +85,5 @@ Capacitor plugin द्वारा दोबारा schedule कराना)
 
 - अनुमति का ढाँचा और रन-टाइम बटन पहले से सही हैं।
 - `USE_EXACT_ALARM` हटाकर Play की अनावश्यक घोषणा से बचा गया।
-- **रीबूट के बाद अलार्म लगाना अभी बाकी है** और वह APK बनाकर फ़ोन पर जाँचे बिना
-  पूरा नहीं होगा।
+- **रीबूट के बाद अलार्म प्लगइन ख़ुद बहाल करता है** — यह पिछली फ़ाइल में ग़लत लिखा
+  था। अब बस असली फ़ोन पर रीबूट करके देखना है।
