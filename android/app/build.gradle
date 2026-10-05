@@ -1,14 +1,33 @@
 apply plugin: 'com.android.application'
 
+// Release signing — क्रेडेंशियल कभी repo में नहीं आते।
+// `~/.bajrang-keystore.properties` बनाने का तरीका: scripts/make-keystore.sh
+def keystorePropsFile = new File(System.getProperty("user.home"), ".bajrang-keystore.properties")
+def keystoreProps = new Properties()
+def hasKeystore = keystorePropsFile.exists()
+if (hasKeystore) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
 android {
+    signingConfigs {
+        if (hasKeystore) {
+            release {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
     namespace "com.bajrang.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.bajrang.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.2.0"
+        versionCode 2
+        versionName "0.3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -18,6 +37,10 @@ android {
     }
     buildTypes {
         release {
+            // keystore न हो तो भी बिल्ड चले, पर Play की AAB लाने के लिए ज़रूरी है
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

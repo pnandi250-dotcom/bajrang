@@ -229,6 +229,35 @@ npm run android:run
 
 `npm run icons` — `scripts/make-icons.mjs` बिना किसी टूल के PNG आइकन बनाता है (zlib + CRC32)।
 
+## Android release build
+
+**पहली बार** — signing key बनाएँ (यह repo में कभी नहीं आती):
+
+```bash
+bash scripts/make-keystore.sh
+```
+
+यह `bajrang-release.keystore` बनाता है और `~/.bajrang-keystore.properties` में
+रखता है। **दोनों की एक नकल पासवर्ड मैनेजर में रखिए** — key खो गई तो Play Store में
+नया ऐप नहीं भेजा जा सकता।
+
+**फिर** — AAB बनाएँ (Play Store को यही चाहिए):
+
+```bash
+npm run cap:sync
+cd android && ./gradlew bundleRelease
+```
+
+नतीजा: `android/app/build/outputs/bundle/release/app-release.aab`
+
+जाँच: `keytool -list -v -keystore bajrang-release.keystore` → `Valid from` लगभग
+27 साल दिखना चाहिए।
+
+Play Console में यह भी भरना पड़ेगा: privacy policy URL, **Data safety → कोई डेटा
+नहीं** (सब `localStorage` में है), content rating, और target SDK 35।
+
+keystore न हो तो debug APK फिर भी बन जाता है — सिर्फ़ release बंधन छोड़कर।
+
 ## आगे · Next
 
 - सर्वर + खाता (स्ट्रीक सिंक), रेफ़रल लिंक
