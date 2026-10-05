@@ -1,12 +1,11 @@
 import { useMemo } from "react";
-import { VERSE_PENDING_NOTE, chalisaYatra, hopeOfDay } from "../lib/content";
+import { chalisaYatra, hopeOfDay } from "../lib/content";
 import { KATHA_TOTAL, plan, publishedCount, writtenCount } from "../lib/katha";
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   addDays,
   calendarDateForDevotionalDay,
   formatDate,
-  formatFullDate,
   hanumanDayName,
   toDateKey,
   toNativeDigits,
@@ -14,8 +13,16 @@ import {
 } from "../lib/date";
 import { fmt, t as translate, useLang, useT, type Lang } from "../lib/i18n";
 import { Button } from "../components/ui/Button";
-import { Card, Eyebrow } from "../components/ui/Card";
+import { Card } from "../components/ui/Card";
 import { WeekStrip } from "../components/WeekStrip";
+import {
+  IconArrow,
+  IconBook,
+  IconCheck,
+  IconFlame,
+  IconShare,
+  IconKalash,
+} from "../components/icons";
 import { lastBackupAt } from "../lib/backup";
 import { LanguagePicker } from "../components/LanguagePicker";
 
@@ -55,332 +62,297 @@ export function Home({
 
   return (
     <div className="safe-top stagger px-5 pt-3 pb-6">
-      {/* ऊपर: स्ट्रीक + संस्करण */}
-      <header className="flex items-center justify-between">
-        <div className="pressable flex items-center gap-2 rounded-full border border-saffron-200 bg-white/85 py-1.5 pr-4 pl-1.5 shadow-[0_6px_18_-14px_rgba(120,44,25,0.6)]">
-          {isNewHere ? (
-            <>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-saffron-100 to-saffron-200 text-base">
-                🪔
+      {/* ऊपर: स्ट्रीक, भाषा, संस्करण — पतली पंक्ति, कोई डिब्बा नहीं */}
+      <header className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-baseline gap-2">
+          {state.streak > 0 && !state.isPaused ? (
+            <span className="flex items-baseline gap-1.5">
+              <IconFlame className="size-4 translate-y-0.5 text-saffron-500" />
+              <span className="text-lg font-semibold text-ink-900 tabular-nums">
+                {toNativeDigits(state.streak)}
               </span>
-              <span className="text-sm font-bold text-ink-700">{t("नया शुरुआत")}</span>
-            </>
+              <span className="text-sm text-ink-500">{t("दिन")}</span>
+            </span>
           ) : state.isPaused ? (
-            <>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-cream-200 to-cream-300 text-base">
-                🛌
-              </span>
-              <span className="text-lg font-extrabold text-ink-900 tabular-nums">
-                {toNativeDigits(state.streak)}
-              </span>
-              <span className="text-sm font-semibold text-ink-500">{t("विश्राम")}</span>
-            </>
-          ) : (
-            <>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-saffron-100 to-saffron-200 text-lg">
-                <span className="animate-flame">🔥</span>
-              </span>
-              <span className="text-lg font-extrabold text-ink-900 tabular-nums">
-                {toNativeDigits(state.streak)}
-              </span>
-              <span className="text-sm font-semibold text-ink-500">{t("दिन")}</span>
-            </>
-          )}
+            <span className="text-sm text-ink-500">
+              {t("विश्राम")} · {toNativeDigits(state.streak)} {t("दिन")}
+            </span>
+          ) : isNewHere ? (
+            <span className="text-sm text-ink-500">{t("नया शुरुआत")}</span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <LanguagePicker variant="compact" />
           <button
             type="button"
             onClick={onOpenSettings}
-            className="rounded-full bg-saffron-100/70 px-3 py-1.5 text-xs font-bold tracking-[0.12em] text-saffron-700"
+            className="text-[11px] font-medium tracking-[0.1em] text-ink-500 uppercase"
           >
-            BAJRANG
+            Bajrang
           </button>
         </div>
       </header>
 
-      {/* नमस्कार */}
-      <div className="mt-6">
-        <p className="text-sm font-semibold text-saffron-700">{partOfDay}</p>
-        <h1 className="mt-1 text-[28px] leading-snug font-extrabold text-ink-900">
+      {/* नमस्कार — आज का दिन भी, साथ में */}
+      <div className="mt-7">
+        <p className="text-sm text-ink-500">{partOfDay}</p>
+        <h1 className="display mt-1 text-[2rem] leading-[1.4] text-ink-900">
           {t("जय श्री राम")}
-          {firstName ? `, ${firstName}` : ""} 🙏
+          {firstName ? <span className="text-ink-500">, {firstName}</span> : null}
         </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-500">
+        <p className="mt-2 max-w-[30ch] text-[15px] text-ink-700">
           {state.doneToday
             ? t("आज की पूजा पूरी हो चुकी है। शाम को फिर मिलेंगे।")
             : t("आज का एक मिनट, हनुमान जी के साथ।")}
         </p>
-      </div>
-
-      {/* आज का दिन */}
-      <Card className="mt-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[13px] font-semibold text-ink-500">
-              {formatDate(today)} ·{" "}
-              <span className="text-ink-700">{weekdayNames()[today.getDay()]}</span>
-            </p>
-            <p className="mt-0.5 text-lg font-bold text-ink-900">{formatFullDate(today)}</p>
-          </div>
+        <p className="mt-4 flex items-center gap-2 text-sm text-ink-500">
+          <span>{formatDate(today)}</span>
+          <span aria-hidden="true" className="text-cream-400">
+            ·
+          </span>
+          <span>{weekdayNames()[today.getDay()]}</span>
           {specialDay ? (
-            <span className="animate-floaty shrink-0 rounded-2xl bg-linear-to-b from-saffron-100 to-saffron-200 px-3 py-2 text-center shadow-[0_6px_16_-12px_rgba(120,44,25,0.8)]">
-              <span className="block text-xl leading-none">🚩</span>
-              <span className="mt-1 block text-[11px] font-bold text-saffron-700">{specialDay}</span>
+            <span className="text-saffron-700">
+              · {t("हनुमान जी का दिन")}
             </span>
           ) : null}
-        </div>
-
-        {specialDay ? (
-          <p className="mt-4 rounded-2xl bg-saffron-50 px-4 py-3 text-sm leading-[1.8] font-medium text-saffron-800">
-            {t("आज")} {specialDay} {t("है — हनुमान जी के दिन। आज का पूजा और सोहना है।")}
-          </p>
-        ) : null}
-
-        {/* हफ़्ते की झलक */}
-        <div className="mt-5">
-          <WeekStrip />
-        </div>
-      </Card>
-
-      {/* सबसे बड़ा बटन */}
-      <div className="mt-6">
-        {state.doneToday ? (
-          <>
-            <div className="rounded-[28px] border border-gold-300 bg-linear-to-b from-gold-200 to-cream-200 px-6 py-5 text-center shadow-glow">
-              <p className="text-2xl font-extrabold text-ink-900">{t("आज की पूजा पूरी 🙏")}</p>
-              <p className="mt-2 text-sm leading-relaxed font-medium text-ink-700">
-                {t("कल फिर मिलेंगे। हनुमान जी आपका रक्षक हैं।")}
-              </p>
-            </div>
-            <Button variant="soft" size="lg" block className="mt-3" onClick={onOpenShare}>
-              🖼️ {t("साप्ताहिक कार्ड साझा करें")}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button variant="primary" size="xl" block onClick={onStartRitual}>
-              <span className="text-2xl">🙏</span>
-              {t("आज की पूजा शुरू करें")}
-            </Button>
-            {state.streak > 0 ? (
-              <button
-                type="button"
-                onClick={onOpenShare}
-                className="pressable mt-3 w-full rounded-2xl py-2.5 text-sm font-bold text-saffron-700"
-              >
-                🖼️ {t("साप्ताहिक कार्ड बनाएँ")}
-              </button>
-            ) : null}
-          </>
-        )}
+        </p>
       </div>
 
-      {/* रविवार है तो कार्ड साझा करने की नम्र निवेदन */}
+      {/* सप्ताह — पंक्ति की तरह, डिब्बे के बिना */}
+      <section className="mt-7">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-ink-700">{t("इस हफ़्ते")}</h2>
+          <span className="text-sm text-ink-500 tabular-nums">
+            {toNativeDigits(weekCount(state.completedDates))} /{" "}
+            {toNativeDigits(7)}
+          </span>
+        </div>
+        <div className="mt-3">
+          <WeekStrip />
+        </div>
+      </section>
+
+      {/* पूजा — स्क्रीन का एक ही मुख्य काम */}
+      <div className="mt-8">
+        {state.doneToday ? (
+          <div className="border-l-2 border-gold-400 pl-4">
+            <p className="display text-[1.375rem] text-ink-900">
+              {t("आज की पूजा पूरी")}
+            </p>
+            <p className="mt-1 text-[15px] text-ink-700">
+              {t("कल फिर मिलेंगे। हनुमान जी आपका रक्षक हैं।")}
+            </p>
+          </div>
+        ) : (
+          <Button variant="primary" size="xl" block onClick={onStartRitual}>
+            <IconFlame className="size-5" />
+            {t("आज की पूजा शुरू करें")}
+          </Button>
+        )}
+        {state.streak > 0 ? (
+          <button
+            type="button"
+            onClick={onOpenShare}
+            className="row mt-2 text-sm text-ink-700"
+          >
+            <IconShare className="size-4 text-ink-500" />
+            <span className="flex-1 text-left">{t("साप्ताहिक कार्ड बनाएँ")}</span>
+            <IconArrow className="size-4 text-ink-500" />
+          </button>
+        ) : null}
+      </div>
+
+      {/* रविवार — कार्ड साझा करने की नम्र निवेदन */}
       {today.getDay() === 0 && state.streak > 0 ? (
-        <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/80 to-white">
-          <Eyebrow tone="gold">{t("आज रविवार है · Sunday")}</Eyebrow>
-          <p className="mt-2 text-[17px] leading-[1.85] font-bold text-ink-900">
+        <div className="mt-6 border-t border-cream-300 pt-5">
+          <p className="text-sm text-ink-700">
             {fmt("आपके {n} दिन की साधना को साझा करें — एक तस्वीर, कुछ लोगों के लिए प्रेरणा बन जाएगी।", {
               n: toNativeDigits(state.streak),
             })}
           </p>
-          <Button variant="deep" size="lg" block className="mt-4" onClick={onOpenShare}>
-            {t("साप्ताहिक कार्ड बनाएँ")}
+          <Button variant="soft" size="md" className="mt-3" onClick={onOpenShare}>
+            <IconShare className="size-4" />
+            {t("साप्ताहिक कार्ड साझा करें")}
           </Button>
-        </Card>
+        </div>
       ) : null}
 
-      {/* क्षमा और विश्राम — दोनों ही दिल जीतने वाली बातें */}
+      {/* विश्राम — सूचना, अनुरोध नहीं */}
       {state.isPaused ? (
-        <Card className="mt-5 border-saffron-200 bg-linear-to-b from-cream-200 to-white">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🛌</span>
-            <p className="text-lg font-extrabold text-ink-900">{t("विश्राम जारी है")}</p>
-          </div>
-          <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-            {state.pauseDaysLeft > 0 ? (
-              <>
-                <b>
-                  {toNativeDigits(state.pauseDaysLeft)} {t("दिन")}
-                </b>{" "}
-                {fmt("और आराम। आपकी {n} दिन की साधना जहाँ थी वहीं सुरक्षित है — रुके हुए दिन छूटे नहीं गिने जाएँगे। जब मन करे, पूजा कीजिए।", {
-                  n: toNativeDigits(state.streak),
-                })}
-              </>
-            ) : (
-              t("आज विश्राम का अंतिम दिन है। कल फिर सिलसिला यहीं से आगे बढ़ेगा।")
-            )}
+        <section className="mt-9 border-t border-cream-300 pt-6">
+          <h2 className="label">{t("विश्राम जारी है")}</h2>
+          <p className="display-sm mt-2 text-[1.0625rem] text-ink-900">
+            {state.pauseDaysLeft > 0
+              ? fmt("{d} दिन और आराम। आपकी {s} दिन की साधना जहाँ थी वहीं सुरक्षित है।", {
+                  d: toNativeDigits(state.pauseDaysLeft),
+                  s: toNativeDigits(state.streak),
+                })
+              : t("आज विश्राम का अंतिम दिन है। कल फिर सिलसिला यहीं से आगे बढ़ेगा।")}
+          </p>
+          <p className="mt-1 text-sm text-ink-500">
+            {t("रुके हुए दिन छूटे नहीं गिने जाएँगे।")}
           </p>
           <Button
-            variant="primary"
-            size="lg"
-            block
+            variant="soft"
+            size="md"
             className="mt-4"
             onClick={() => actions.resumeFromPause()}
           >
             {t("आज से फिर शुरू करें")}
           </Button>
-        </Card>
+        </section>
       ) : null}
 
-      {/* छूटे दिन — क्षमा बचा लेगी या नहीं, पहले बता दें */}
+      {/* छूटे दिन — डाँट नहीं, सच बताइए */}
       {!state.isPaused && state.missedDays > 0 && !state.doneToday ? (
-        state.willRecoverWithGrace ? (
-          <Card className="mt-5 border-gold-300 bg-linear-to-b from-gold-200/70 to-white">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🕊️</span>
-              <p className="text-lg font-extrabold text-ink-900">{t("क्षमा बचा लेगी")}</p>
-            </div>
-            <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-              {fmt("{m} दिन छूट गए हैं, पर आपके पास", { m: toNativeDigits(state.missedDays) })}{" "}
-              <b>
-                {toNativeDigits(state.graceDays)} {t("क्षमा दिन")}
-              </b>{" "}
-              {t("हैं। आज पूजा कीजिए — सिलसिला टूटेगा नहीं। कोई डाँट नहीं, बस ध्यान रखिए।")}
-            </p>
-          </Card>
-        ) : (
-          <Card className="mt-5 border-gold-300/70 bg-gold-200/35">
-            <p className="text-lg font-bold text-ink-900">{t("चिंता मत करो, फिर से शुरू करो 🙏")}</p>
-            <p className="mt-2 text-sm leading-[1.85] text-ink-700">
-              {t("दिन बीत गए")}{" "}
-              {fmt("({n} — कोई बात नहीं। हनुमान जी आज भी आपके साथ हैं। एक मिनट से ही सब शुरू हो जाता है।", {
-                n: toNativeDigits(state.missedDays),
-              })}
-            </p>
-          </Card>
-        )
+        <section className="mt-7 border-l-2 border-saffron-300 pl-4">
+          {state.willRecoverWithGrace ? (
+            <>
+              <h2 className="text-sm font-medium text-ink-900">{t("क्षमा बचा लेगी")}</h2>
+              <p className="mt-1 text-sm text-ink-700">
+                {fmt("{m} दिन छूट गए हैं, पर आपके पास {g} क्षमा दिन हैं। आज पूजा कीजिए — सिलसिला टूटेगा नहीं।", {
+                  m: toNativeDigits(state.missedDays),
+                  g: toNativeDigits(state.graceDays),
+                })}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-sm font-medium text-ink-900">
+                {t("चिंता मत करो, फिर से शुरू करो")}
+              </h2>
+              <p className="mt-1 text-sm text-ink-700">
+                {fmt("{m} दिन बीत गए — कोई बात नहीं। हनुमान जी आज भी आपके साथ हैं। एक मिनट से ही सब शुरू हो जाता है।", {
+                  m: toNativeDigits(state.missedDays),
+                })}
+              </p>
+            </>
+          )}
+        </section>
       ) : null}
 
-      {/* कथा — कल का इंतज़ार बनाने वाली सबसे बड़ी बात */}
-      <button type="button" onClick={onOpenKatha} className="mt-4 block w-full text-left">
-        <Card className="border-saffron-200 bg-linear-to-b from-cream-200 to-white">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Eyebrow>
-                {t("बजरंग कथा")} · {toNativeDigits(state.kathaRevealed)} /{" "}
-                {toNativeDigits(KATHA_TOTAL)}
-              </Eyebrow>
-              <p className="mt-1 text-[17px] leading-snug font-extrabold text-ink-900">
-                {kathaHook.title}
-              </p>
+      {/* चालीसा यात्रा — आज की पंक्ति यहाँ सबसे ऊपर, कल का इशारा उसके नीचे */}
+      <section className="mt-9 border-t border-cream-300 pt-7">
+        {verse ? (
+          <>
+            <p className="label">{verse.source}</p>
+            <div className="display mt-3 text-[1.5rem] leading-[1.75] text-ink-900">
+              {verse.lines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
             </div>
-            <span className="animate-floaty shrink-0 rounded-2xl bg-linear-to-b from-saffron-100 to-saffron-200 px-3 py-2 text-2xl">
-              📖
-            </span>
-          </div>
-          <p className="mt-3 text-sm leading-[1.85] text-ink-700">{kathaHook.note}</p>
-          <p className="mt-3 text-xs font-bold text-saffron-700">{kathaHook.cta} →</p>
-        </Card>
-      </button>
-
-      {/* चालीसा यात्रा — आज की चौपाई और कल का इशारा */}
-      <Card className="mt-5">
-        <Eyebrow>
-          {t("चालीसा यात्रा")} ·{" "}
-          {fmt("{r} / {n}", {
-            r: toNativeDigits(yatra.read),
-            n: toNativeDigits(yatra.total),
-          })}
-        </Eyebrow>
-        <p className="mt-3 text-[17px] leading-[1.9] font-bold text-ink-900">
-          {verse.lines.map((line) => (
-            <span key={line} className="block">
-              {line}
-            </span>
-          ))}
-        </p>
-        {verse.meaningReviewed ? (
-          <p className="mt-3 text-sm leading-[1.85] text-ink-500">{verse.meaning}</p>
-        ) : (
-          <p className="mt-3 rounded-2xl bg-cream-200/80 px-4 py-2.5 text-xs leading-[1.8] text-ink-600">
-            <b className="text-ink-800">{t("अर्थ अभी जाँचा नहीं गया")}</b>{" "}
-            {t("पंक्ति यथावत है, पर जोड़ा गया यह अर्थ भरोसेमंद नहीं लगा — इसलिए छिपाया गया है।")}
-          </p>
-        )}
-        {verse.verified ? null : (
-          <p className="mt-2 rounded-2xl bg-gold-200/60 px-4 py-2.5 text-xs leading-[1.75] text-ink-700">
-            <b className="text-gold-700">{t("जाँच बाकी")}</b> {t(VERSE_PENDING_NOTE)}
-          </p>
-        )}
+            {/* जाँच की बात एक ही पंक्ति में — ऊपर-ऊपर डिब्बे नहीं */}
+            <p className="mt-4 flex items-start gap-2 text-[13px] leading-[1.8] text-ink-500">
+              <IconCheck className="mt-0.5 size-3.5 shrink-0 text-saffron-500" />
+              <span>
+                {t("अर्थ अभी जाँचा नहीं गया")} · {t("पाठ स्रोत से लाया गया है, पर अक्षर-अक्षर जाँच बाकी है")}
+              </span>
+            </p>
+          </>
+        ) : null}
 
         {yatra.read > 0 && yatra.next ? (
-          <p className="mt-3 border-t border-saffron-200 pt-3 text-sm leading-[1.8] text-ink-700">
-            <b className="text-saffron-700">
-              {t("कल:")} {yatra.next.label}
-            </b>
-            <span className="block text-xs text-ink-500">“{yatra.next.teaser}”</span>
+          <p className="mt-6 flex items-baseline gap-2 border-t border-cream-300/70 pt-4 text-sm">
+            <span className="text-ink-500">{t("कल:")}</span>
+            <span className="text-ink-900">{yatra.next.label}</span>
+            <span className="text-ink-500">“{yatra.next.teaser}”</span>
           </p>
         ) : (
-          <p className="mt-3 border-t border-saffron-200 pt-3 text-sm leading-[1.8] font-semibold text-ink-900">
-            {t("चालीसा यात्रा पूरी हुई — सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।")}
+          <p className="mt-6 border-t border-cream-300/70 pt-4 text-sm text-ink-500">
+            {fmt("आज की पूजा के बाद यात्रा आगे बढ़ेगी — कुल {n} इकाइयाँ।", {
+              n: toNativeDigits(yatra.total),
+            })}
           </p>
         )}
-      </Card>
+      </section>
 
-      {/* उम्मीद का संदेश + संकल्प */}
-      <Card className="mt-4 bg-linear-to-b from-saffron-50 to-white">
-        <Eyebrow>{t("आज का संदेश")} · Daily Hope</Eyebrow>
-        <p className="mt-2 text-[17px] leading-[1.85] font-bold text-ink-900">“{hope}”</p>
+      {/* कथा — जब तक जाँच न हो, यहाँ सिर्फ़ यही सच दिखेगा */}
+      <button
+        type="button"
+        onClick={onOpenKatha}
+        className="row mt-7 border-t border-cream-300 pt-5"
+      >
+        <IconBook className="size-5 text-saffron-600" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15px] font-medium text-ink-900">
+            {kathaHook.title}
+          </span>
+          <span className="mt-0.5 block text-sm text-ink-500">{kathaHook.note}</span>
+        </span>
+        <IconArrow className="size-4 shrink-0 text-ink-500" />
+      </button>
+
+      {/* आज का संदेश + संकल्प */}
+      <section className="mt-9">
+        <h2 className="label">{t("आज का संदेश")}</h2>
+        <p className="display-sm mt-2 text-[1.0625rem] text-ink-900">“{hope}”</p>
         {state.profile.sankalp ? (
           <button
             type="button"
             onClick={onOpenSankalp}
-            className="pressable mt-4 flex w-full items-center justify-between rounded-2xl bg-white/80 px-4 py-3 text-left"
+            className="row mt-3 border-t border-cream-300 pt-4"
           >
-            <span>
-              <span className="block text-[11px] font-bold tracking-[0.14em] text-ink-500 uppercase">
-                {t("आपका संकल्प")}
-              </span>
-              <span className="mt-1 block text-base font-bold text-ink-900">
+            <IconKalash className="size-5 text-saffron-600" />
+            <span className="min-w-0 flex-1">
+              <span className="label block">{t("आपका संकल्प")}</span>
+              <span className="mt-0.5 block text-[15px] font-medium text-ink-900">
                 {state.profile.sankalp}
               </span>
             </span>
-            <span className="animate-floaty text-2xl">🪔</span>
+            <IconArrow className="size-4 shrink-0 text-ink-500" />
           </button>
         ) : null}
-      </Card>
+      </section>
 
-      {/* हफ़्ते का सारांश */}
-      <Card className="mt-4">
-        <Eyebrow>{t("साप्ताहिक सारांश")} · Weekly</Eyebrow>
-        <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-          <Stat label={t("इस हफ़्ते")} value={weekCount(state.completedDates)} />
-          <Stat label={t("कुल पूजा")} value={state.totalCompleted} />
-          <Stat label={t("सर्वश्रेष्ठ")} value={state.bestStreak} />
-        </div>
+      {/* याद दिलाने की नम्र सलाह और बैकअप निवेदन */}
+      <ReminderNudge onOpenSettings={onOpenSettings} />
+      <BackupNudge onOpenSettings={onOpenSettings} />
 
-        <div className="mt-4 flex items-center justify-between rounded-2xl bg-cream-200/70 px-4 py-3">
-          <span className="flex items-center gap-2 text-sm font-semibold text-ink-700">
-            <span className="text-base">🕊️</span> {t("क्षमा दिन बाकी")}
+      {/* आँकड़े — छोटी पंक्तियाँ, संख्या की जगह बड़ी */}
+      <section className="mt-9 border-t border-cream-300 pt-6">
+        <dl className="grid grid-cols-3 gap-4">
+          {[
+            { label: t("इस हफ़्ते"), value: weekCount(state.completedDates) },
+            { label: t("कुल पूजा"), value: state.totalCompleted },
+            { label: t("सर्वश्रेष्ठ"), value: state.bestStreak },
+          ].map((item) => (
+            <div key={item.label}>
+              <dd className="text-2xl font-semibold text-ink-900 tabular-nums">
+                {toNativeDigits(item.value)}
+              </dd>
+              <dt className="label mt-1">{item.label}</dt>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-6 flex items-center gap-3">
+          <IconCheck className="size-4 text-saffron-500" />
+          <span className="text-sm text-ink-700">
+            {fmt("{n} क्षमा दिन बाकी", { n: toNativeDigits(state.graceDays) })}
           </span>
-          <span className="flex gap-1.5">
+          <span className="ml-auto flex gap-1.5">
             {Array.from({ length: GRACE_MAX }, (_, index) => (
               <span
                 key={index}
                 className={
                   index < state.graceDays
-                    ? "grid h-7 w-7 place-items-center rounded-full bg-gold-300 text-sm"
-                    : "grid h-7 w-7 place-items-center rounded-full border border-dashed border-saffron-300 text-transparent"
+                    ? "size-2.5 rounded-full bg-saffron-400"
+                    : "size-2.5 rounded-full border border-cream-400"
                 }
-              >
-                🕊️
-              </span>
+              />
             ))}
           </span>
         </div>
-        <p className="mt-2 text-[11px] leading-[1.7] text-ink-500">
-          {fmt("हर {n} दिन की साधना पर एक क्षमा दिन मिलता है (ज़्यादा से ज़्यादा {m})। दिन छूट जाए तो अपने आप लग जाती है।", {
+        <p className="mt-2 text-sm text-ink-500">
+          {fmt("हर {n} दिन की साधना पर एक क्षमा दिन मिलता है (ज़्यादा से ज़्यादा {m})।", {
             n: toNativeDigits(GRACE_EVERY_DAYS),
             m: toNativeDigits(GRACE_MAX),
           })}
         </p>
-      </Card>
-
-      {/* याद दिलाने की नम्र सलाह — नीचे, ताकि पूजा का बटन साफ़ रहे */}
-      <ReminderNudge onOpenSettings={onOpenSettings} />
-      <BackupNudge onOpenSettings={onOpenSettings} />
+      </section>
 
       {yatra.read === 0 && yatra.firstUnit ? (
         <Card className="mt-4 border-saffron-200 bg-cream-200/60">
@@ -393,8 +365,8 @@ export function Home({
         </Card>
       ) : null}
 
-      <p className="mt-6 text-center text-xs leading-relaxed text-ink-500">
-        {t("जय बजरंगबली 🙏 — प्रेम और अनुशासन, रोज़ एक मिनट")}
+      <p className="display-sm mt-10 text-center text-[0.9375rem] text-ink-500">
+        {t("जय बजरंगबली — प्रेम और अनुशासन, रोज़ एक मिनट")}
       </p>
     </div>
   );
@@ -568,15 +540,6 @@ function ReminderNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
         </div>
       </div>
     </Card>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-2xl bg-cream-200/70 px-2 py-3">
-      <p className="text-2xl font-extrabold text-ink-900 tabular-nums">{toNativeDigits(value)}</p>
-      <p className="mt-0.5 text-[11px] font-semibold text-ink-500">{label}</p>
-    </div>
   );
 }
 

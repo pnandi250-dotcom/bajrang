@@ -5,6 +5,9 @@
 import { readFileSync } from "node:fs";
 
 const home = readFileSync("D:/bajrang/src/screens/Home.tsx", "utf-8");
+const allScreens = ["Home", "Ritual", "Katha", "Calendar", "Sankalp", "Settings"]
+  .map((name) => readFileSync(`D:/bajrang/src/screens/${name}.tsx`, "utf-8"))
+  .join("\n");
 
 const src = readFileSync("D:/bajrang/src/lib/content.ts", "utf-8").replace(/\r\n/g, "\n");
 const bn = readFileSync("D:/bajrang/src/lib/contentBn.ts", "utf-8").replace(/\r\n/g, "\n");
@@ -111,7 +114,9 @@ check("हर अर्थ पर meaningReviewed लिखा है", entries.
 check("अभी कोई अर्थ जाँचा हुआ नहीं है", unreviewed === entries.length, `${unreviewed} जाँचे हुए`);
 check("वर्स-व्यू जाँच के बिना अर्थ नहीं भरता", /meaning: verse\.meaningReviewed/.test(src),
   "verseView() जाँच के बिना भी अर्थ लौटा रहा है");
-check("Home अर्थ छिपाता है", /verse\.meaningReviewed \? \(/.test(home));
+// अर्थ अभी दिखाया नहीं जाता — न होम पर, न कहीं और
+check("Home अर्थ दिखाता तो नहीं", !/\{verse\.meaning\}/.test(home));
+check("पूरा अर्थ स्क्रीन पर कहीं भी नहीं", !/\{verse\.meaning\}/.test(allScreens));
 check("Ritual अर्थ छिपाता है", /if \(verse\.meaning\)/.test(
   readFileSync("D:/bajrang/src/screens/Ritual.tsx", "utf-8"),
 ));

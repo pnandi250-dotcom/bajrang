@@ -1,22 +1,35 @@
+/**
+ * नीचे की पट्टी — पाँच टैब, एक ही रेखा-शैली के प्रतीक।
+ *
+ * पहले हर टैब पर ईमोजी था और उसके नीचे दो भाषाएँ (हिन्दी + अंग्रेज़ी) — यानी हर
+ * आइकन के नीचे दो पंक्तियाँ, और सक्रिय टैब पूरा पीला डिब्बा। अब सिर्फ़ एक नाम,
+ * और सक्रिय होने पर सिर्फ़ रंग बदलता है — कोई पृष्ठभूमि-डिब्बा नहीं।
+ */
 import { cn } from "../lib/utils";
 import { useT } from "../lib/i18n";
 import { haptic } from "../lib/device";
+import { IconBook, IconDiya, IconFlame, IconKalash, IconShare } from "./icons";
 
 export type Tab = "home" | "katha" | "calendar" | "sankalp" | "settings";
 
-const TABS: { id: Tab; icon: string; hindi: string; english: string }[] = [
-  { id: "home", icon: "🙏", hindi: "आज", english: "Home" },
-  { id: "katha", icon: "📖", hindi: "कथा", english: "Katha" },
-  { id: "calendar", icon: "📅", hindi: "पंचांग", english: "Calendar" },
-  { id: "sankalp", icon: "🪔", hindi: "संकल्प", english: "Sankalp" },
-  { id: "settings", icon: "⚙️", hindi: "सेटिंग", english: "Settings" },
+const TABS: {
+  id: Tab;
+  Icon: (p: { className?: string }) => React.ReactElement;
+  label: string;
+  english: string;
+}[] = [
+  { id: "home", Icon: IconFlame, label: "आज", english: "Today" },
+  { id: "katha", Icon: IconBook, label: "कथा", english: "Katha" },
+  { id: "calendar", Icon: IconDiya, label: "पंचांग", english: "Dapan" },
+  { id: "sankalp", Icon: IconKalash, label: "संकल्प", english: "Resolve" },
+  { id: "settings", Icon: IconShare, label: "सेटिंग", english: "Settings" },
 ];
 
 export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const t = useT();
   return (
-    <nav className="safe-bottom sticky bottom-0 z-30 border-t border-saffron-100 bg-cream-100/95 backdrop-blur-md">
-      <ul className="mx-auto flex max-w-[480px] items-stretch justify-around px-2 py-1.5">
+    <nav className="safe-bottom sticky bottom-0 z-30 border-t border-cream-300 bg-cream-50/95 backdrop-blur-md">
+      <ul className="mx-auto flex max-w-[480px] items-stretch px-1">
         {TABS.map((item) => {
           const active = item.id === tab;
           return (
@@ -28,37 +41,34 @@ export function BottomNav({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) =>
                   onChange(item.id);
                 }}
                 aria-current={active ? "page" : undefined}
-                aria-label={`${t(item.hindi)} (${item.english})`}
+                aria-label={`${t(item.label)} — ${item.english}`}
                 className={cn(
-                  "flex w-full flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition-colors",
-                  "min-h-[58px] justify-center",
-                  active ? "bg-saffron-100" : "active:bg-cream-200",
+                  "flex min-h-[56px] w-full flex-col items-center justify-center gap-1.5 px-1 py-2",
+                  "transition-colors active:bg-cream-200/60",
                 )}
               >
+                <item.Icon
+                  className={cn(
+                    "size-5 transition-colors",
+                    active ? "text-saffron-600" : "text-ink-500/60",
+                  )}
+                />
                 <span
                   className={cn(
-                    "text-xl leading-none transition-transform",
-                    active ? "scale-110" : "opacity-55 grayscale",
+                    "text-[11px] leading-none",
+                    active ? "font-semibold text-saffron-700" : "text-ink-500",
                   )}
                 >
-                  {item.icon}
+                  {t(item.label)}
                 </span>
+                {/* सक्रिय टैब की पतली रेखा — डिब्बे की जगह */}
                 <span
+                  aria-hidden="true"
                   className={cn(
-                    "text-[11px] leading-tight font-bold",
-                    active ? "text-saffron-700" : "text-ink-500",
+                    "h-px w-4 rounded-full transition-colors",
+                    active ? "bg-saffron-500" : "bg-transparent",
                   )}
-                >
-                  {t(item.hindi)}
-                </span>
-                <span
-                  className={cn(
-                    "text-[9px] leading-none font-semibold tracking-wide",
-                    active ? "text-saffron-600" : "text-ink-500/70",
-                  )}
-                >
-                  {item.english}
-                </span>
+                />
               </button>
             </li>
           );

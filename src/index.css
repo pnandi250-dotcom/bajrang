@@ -1,5 +1,77 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   फ़ॉन्ट — ख़ुद host किए हुए, कोई CDN नहीं। ऐप ऑफ़लाइन चलता है, इसलिए फ़ॉन्ट भी
+   यहीं हैं (public/fonts/)।
+   Noto Serif Devanagari → पवित्र पाठ और शीर्षक
+   Noto Sans Devanagari  → बाक़ी ऐप
+   --------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/serif-400-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/serif-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/serif-600-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/serif-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sans-400-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sans-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/sans-500-devanagari.woff2') format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+@font-face {
+  font-family: 'Noto Serif Devanagari';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/sans-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
   --color-saffron-50: #fff4ed;
   --color-saffron-100: #ffe6d5;
@@ -34,7 +106,19 @@
   --color-ink-700: #4b2f1d;
   --color-ink-900: #2f1a0d;
 
-  --font-devanagari: "Nirmala UI", "Noto Sans Devanagari", "Mangal", sans-serif;
+  /* UI — नंबर, बटन, छोटे टेक्स्ट */
+  --font-devanagari: "Noto Sans Devanagari", "Nirmala UI", system-ui, sans-serif;
+  /* पवित्र पाठ और शीर्षक — सेरिफ़, ताकि श्लोक UI से अलग दिखे */
+  --font-script: "Noto Serif Devanagari", "Noto Sans Devanagari", serif;
+
+  /* टाइप स्केल — कुछ सीढ़ियाँ, बहुत सी नहीं */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.125rem;
 
   --shadow-soft: 0 10px 30px -12px rgb(120 44 25 / 0.28);
   --shadow-glow: 0 0 0 1px rgb(232 178 74 / 0.35), 0 12px 40px -14px rgb(232 178 74 / 0.55);
@@ -81,6 +165,60 @@
   :focus-visible {
     outline: 3px solid var(--color-saffron-500);
     outline-offset: 2px;
+  }
+
+  /* ---- लेआउट के नियम ----
+     1. हर स्क्रीन पर एक ही मुख्य बात होती है; बाक़ी सहारा है।
+     2. सजावट के लिए डिब्बे नहीं, ख़ाली जगह और पतली रेखाएँ।
+     3. ऊपर-नीचे ४ और बाईं-दाईं ५ की सीढ़ी — हर जगह एक जैसी नहीं। */
+
+  .display {
+    font-family: var(--font-script);
+    font-weight: 400;
+    /* देवनागरी में ऊपर-नीचे के निशान के लिए थोड़ी जगह */
+    line-height: 1.75;
+    letter-spacing: 0;
+  }
+
+  .display-sm {
+    font-family: var(--font-script);
+    line-height: 1.7;
+  }
+
+  .label {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-500);
+  }
+
+  /* सतही सतह — कार्ड से हल्की, सीमा रेखा के बजाय हल्की भराई */
+  .surface {
+    background: color-mix(in oklab, var(--color-cream-50) 82%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-cream-400) 45%, transparent);
+  }
+
+  .hairline {
+    height: 1px;
+    background: color-mix(in oklab, var(--color-cream-400) 55%, transparent);
+  }
+
+  /* क्रियावली वस्तु — कार्ड नहीं, पंक्ति जैसी साफ़ पंक्ति */
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    width: 100%;
+    padding: 0.875rem 0.25rem;
+    text-align: left;
+  }
+
+  /* प्रतीक — ईमोजी की जगह पतली रेखा वाला आकार */
+  .icon {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: 1.5;
   }
 
   ::selection {
