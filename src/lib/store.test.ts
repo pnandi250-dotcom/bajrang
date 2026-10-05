@@ -7,6 +7,7 @@
  * दिन की सीमा ३:०० बजे है: रात २:३० बजे की पूजा "कल" दर्ज होती है।
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { STATE_KEY } from "./state";
 
 const STORAGE_KEY = "bajrang.state.v1";
 
@@ -562,5 +563,57 @@ describe("गिनती-अद्यावधान", () => {
     actions.completeRitual();
     off();
     expect(calls).toBe(1);
+  });
+});
+
+describe("useSyncExternalStore का तय", () => {
+  // यह परीक्षण इसलिए है क्योंकि एक बार गिनती-वाली स्थिति हर बार नई वस्तु बनाकर
+  // लौटी थी — React infinite loop में चला गया और स्क्रीन सफ़ेद हो गई।
+  it("दो बार बुलाने पर एक ही वस्तु मिलती है", async () => {
+    setClock("2026-10-05T06:00:00");
+    seed(stateWith({ streak: 4, lastCompleted: "2026-10-04" }));
+    const { getDerived } = await loadStore();
+    expect(getDerived()).toBe(getDerived());
+  });
+
+  it("स्टोर बदलने पर नई वस्तु मिलती है", async () => {
+    setClock("2026-10-05T06:00:00");
+    seed(stateWith({ streak: 4, lastCompleted: "2026-10-04" }));
+    const { actions, getDerived } = await loadStore();
+    const before = getDerived();
+    actions.completeRitual();
+    const after = getDerived();
+    expect(after).not.toBe(before);
+    expect(after.streak).toBe(5);
+  });
+
+  it("पूजा-दिन पलटने पर गिनती फिर से बनती है", async () => {
+    // रात 2 बजे तक पूजा-दिन "5 अक्टूबर" है, 3 बजे के बाद "6 अक्टूबर"
+    setClock("2026-10-06T02:00:00");
+    seed(stateWith({ streak: 4, lastCompleted: "2026-10-05" }));
+    const { getDerived } = await loadStore();
+    const beforeThree = getDerived();
+    expect(beforeThree.todayKey).toBe("2026-10-05");
+
+    setClock("2026-10-06T05:00:00");
+    const afterThree = getDerived();
+    expect(afterThree).not.toBe(beforeThree);
+    expect(afterThree.todayKey).toBe("2026-10-06");
+  });
+
+  it("बैकअप आयात के बाद नई वस्तु मिलती है", async () => {
+    setClock("2026-10-05T06:00:00");
+    seed(stateWith({ streak: 4, lastCompleted: "2026-10-04" }));
+    const { reloadFromStorage, getDerived } = await loadStore();
+    const before = getDerived();
+    // सीधे localStorage बदलकर reload — जैसे importState करता है
+    window.localStorage.setItem(
+      STATE_KEY,
+      JSON.stringify({ ...stateWith({ streak: 99, lastCompleted: "2026-10-05" }) }),
+    );
+    reloadFromStorage();
+    const after = getDerived();
+    expect(after).not.toBe(before);
+    expect(after.streak).toBe(99);
   });
 });

@@ -22,6 +22,7 @@ const CHECKS = [
   ["katha-facts-check.mjs", "कथा में ज्ञात-ग़लत तथ्य लौटे नहीं"],
   ["katha-grounding-check.mjs", "कथा प्रकाशित न हो जब तक जाँच न हो"],
   ["android-boot-check.mjs", "रीबूट receiver और exact-alarm की स्थिति"],
+  ["app-renders-check.mjs", "ऐप सचमुच खुलती है (सफ़ेद स्क्रीन नहीं)"],
 ];
 
 let failed = 0;

@@ -75,6 +75,7 @@ export function subscribe(listener: () => void) {
  */
 export function reloadFromStorage(): void {
   state = load();
+  derivedCache = null;
   emit();
 }
 
@@ -83,17 +84,31 @@ export function getState(): AppState {
   return state;
 }
 
-/** गिनती-सहित की स्थिति — यही UI दिखाता है */
+/**
+ * गिनती-सहित की स्थिति — यही UI दिखाता है।
+ *
+ * `useSyncExternalStore` को हर बार **एक ही वस्तु** चाहिए, वरना React मानता है
+ * कि स्टोर बदल रहा है और infinite loop शुरू हो जाता है (स्क्रीन सफ़ेद)। इसलिए
+ * नतीजा कच्ची स्थिति और उस दिन के हिसाब से याद रखा जाता है — तभी जब सचमुच
+ * स्थिति या पूजा-दिन बदले, तब नया गिना जाता है।
+ */
+let derivedCache: { raw: AppState; dayKey: string; value: DerivedState } | null = null;
+
 export function getDerived(): DerivedState {
   const raw = state;
-  // पूजा का दिन 3:00 बजे से शुरू होता है
-  const view = streakView(raw, devotionalDateKey());
-  return {
+  const dayKey = devotionalDateKey();
+  if (derivedCache && derivedCache.raw === raw && derivedCache.dayKey === dayKey) {
+    return derivedCache.value;
+  }
+  const view = streakView(raw, dayKey);
+  const value: DerivedState = {
     ...raw,
     ...view,
     bestStreak: Math.max(raw.bestStreak, view.streak, raw.streakAtPause),
     isSpecialDay: isHanumanDay(fromDateKey(view.todayKey)),
   };
+  derivedCache = { raw, dayKey, value };
+  return value;
 }
 
 export function useAppState(): AppState {
