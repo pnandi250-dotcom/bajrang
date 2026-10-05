@@ -1,12 +1,4 @@
-/**
- * English translation — the English for every `t("…")` sentence.
- *
- * `i18n-check.mjs` looks for each `t("…")` sentence in here; anything missing
- * will show Hindi in the app and turn the check red. So every sentence here
- * must be complete.
- *
- * Source: D:\bajrang\src\** — Hindi is the source language.
- */
+/** English translation of every `t("…")` string. Hindi is the source language. */
 
 export const EN: Record<string, string> = {
   "Bajrang को फ़ोन में लगाएँ": "Add Bajrang to your phone",
@@ -260,43 +252,22 @@ export const EN: Record<string, string> = {
   "भारत के पंचांग में सोमवार 3 अप्रैल 2028।": "In the Indian Panchang: Monday 3 April 2028.",
   "• चैत्र पूर्णिमा (हनुमान जयंती): drikpanchang.com/vrats/purnimasidates.html": "• Chaitra Purnima (Hanuman Janm): drikpanchang.com/vrats/purnimasidates.html",
   "• राम नवमी: drikpanchang.com/hindu-festivals/rama-navami": "• Rama Navami: drikpanchang.com/hindu-festivals/rama-navami",
-  /* ---------- dynamic lists (navigation, sankalp ideas) ---------- */
-  कथा: "Katha",
-  Home: "Home",
-  Katha: "Katha",
-  Calendar: "Calendar",
-  Sankalp: "Sankalp",
-  Settings: "Settings",
+  "कथा": "Katha",
+  "Home": "Home",
+  "Katha": "Katha",
+  "Calendar": "Calendar",
+  "Sankalp": "Sankalp",
+  "Settings": "Settings",
   "परीक्षा में पास होना": "Passing my exam",
   "परिवार का स्वास्थ्य": "My family's health",
   "नौकरी मिलना": "Finding a job",
   "शांति और सच्चाई": "Peace and truth",
   "माँ-पापा की सेहत": "My parents' health",
-
-  /* ---------- badges ---------- */
-  "एक हफ़्ते की लगातार साधना। बहुत बढ़िया शुरुआत!":
-    "One week of steady sadhana. A lovely beginning!",
-  "तीन हफ़्ते। अब यह आपकी दिनचर्या बन गई।":
-    "Three weeks. Now it has become part of your daily routine.",
-  "108 — चालीसा के बारह आयाम। हनुमान जी की पूर्ण कृपा।":
-    "108 — the twelve forms of the Chalisa. The full grace of Hanuman ji.",
-
-  /* ---------- closing pairs ---------- */
   "दिन बाकी": "days left",
-  पंक्ति: "Line",
-  जप: "Jap",
+  "पंक्ति": "Line",
+  "जप": "Jap",
   "सेकंड बाकी": "seconds left",
-  "(drikpanchang.com) से ली गई हैं। भारत के पंचांग के हिसाब से चाँद वाले त्योहार एक दिन ऊपर-नीचे हो सकते हैं, और दूसरे देशों में यही तिथि एक दिन पहले पड़ सकती है। अपने इलाके की पंचांग से मिलाकर ऊपर वाली तारीख बदल दीजिए।":
-    "are taken from (drikpanchang.com). In the Indian Panchang, moon-based festivals can fall a day earlier or later, and in other countries the same tithi may come a day sooner. Check it against the Panchang of your own region and change the date above if needed.",
-
-  /* ---------- version line ---------- */
   "हिंदी ⇄ बंगाला": "English ⇄ Bengali",
-
-  /* ---------- language-specific note (third language) ---------- */
-  "English screen, but the verses stay in the original Devanagari":
-    "English screen, but the verses stay in the original Devanagari",
-
-  /* ---------- पंक्तियों की जाँच दिखाना ---------- */
   "जाँच बाकी": "Not checked yet",
   "यह पंक्ति किसी प्रामाणिक संस्करण से मिलान कर जाँची नहीं गई है।": "This line has not been checked word for word against a published edition.",
   "पंक्तियों की जाँच": "Verse review",
@@ -305,11 +276,7 @@ export const EN: Record<string, string> = {
   "जो पंक्तियाँ किसी रचना से नहीं मिलीं, वे हटा दी गई हैं। अब सिर्फ़ वही दिखता है": "Lines that could not be matched to a known work have been removed. What remains",
   "जो स्रोत से जुड़ा हो — पर वह भी अभी अलिज्ञात स्रोत पर टिका है, तब तक जब तक जाँच न हो।": "is attributed to a source, but that attribution is still unconfirmed until someone checks it.",
   "पूरी सूची और जाँच का तरीका: CONTENT-REVIEW.md (रिपॉज़िटरी में)।": "The full list and how to check it: CONTENT-REVIEW.md (in the repository).",
-
-  /* ---------- प्रसंग-निशान ---------- */
   "प्रारूप — जाँच बाकी": "Draft — not checked yet",
-
-  /* ---------- पाठ-स्रोत ---------- */
   "{done} / {total} पंक्तियाँ अक्षर-अक्षर जाँची गई हैं।": "{done} of {total} lines have been checked word for word.",
   "पाठ कहाँ से आया": "Where the text comes from",
   "पूरा पाठ याद से नहीं, प्रकाशित स्रोत से उतारा गया है —": "The whole text was copied from a published source, not written from memory —",
@@ -321,8 +288,6 @@ export const EN: Record<string, string> = {
   "अर्थ:": "Meanings:",
   "पंक्ति जो कहती है उसी का सार लिखा है, पर यह मेरा अपना लेखन है और जाँचा नहीं गया।": "each one describes the lines it sits under, but these are my own words and have not been checked.",
   "इसीलिए हर पंक्ति के साथ “जाँच बाकी” दिखता है — कोई पाठ ग़लती से प्रामाणिक न समझ ले। जाँच पूरी होने पर यह निशान हट जाएगा।": "That is why every line carries a \"Not checked yet\" mark — so no text is taken for verified scripture. The mark disappears when the review is done.",
-
-  /* ---------- कथा रोकी हुई (जाँच बाकी) ---------- */
   "कथा जाँच के बाद खुलेगी": "The katha opens after review",
   "{w} प्रसंग लिखे जा चुके हैं और हर एक का स्रोत दर्ज है, पर विद्वान पाठक की समीक्षा बाकी है। तब तक यह कथा आपके सामने नहीं आएगी।": "{w} episodes are written and each records its source, but a knowledgeable reader has not checked them yet. Until then the katha does not appear.",
   "जाँच की स्थिति देखें": "See the review status",
@@ -334,28 +299,18 @@ export const EN: Record<string, string> = {
   "हर प्रसंग का स्रोत दर्ज है — वाल्मीकि रामायण या रामचरितमानस। जो कथा इन दोनों में नहीं मिलती, उसे “लोक-परंपरा” कहा गया है। विद्वान पाठक की समीक्षा पूरी होने से पहले कोई प्रसंग प्रकाशित नहीं होता।": "Every episode records its source — the Valmiki Ramayana or the Ramcharitmanas. Anything found in neither is marked \"folk tradition\". No episode is published before a knowledgeable reader has checked it.",
   "लोक-परंपरा — जाँच बाकी": "Folk tradition — review pending",
   "ग्रंथ-आधारित — जाँच बाकी": "From the texts — review pending",
-
-  /* ---------- कथा की स्थिति ---------- */
   "कथा का हाल": "State of the katha",
   "{w} प्रसंग लिखे गए हैं, {p} प्रकाशित। जाँच पूरी न होने तक कथा स्क्रीन पर नहीं दिखती — न प्रसंग, न उनका शीर्षक।": "{w} episodes written, {p} published. Until the review is done the katha does not appear on the screen — not the episodes, not even their titles.",
   "हर प्रसंग पर दो बड़े ग्रंथों में से स्रोत दर्ज है; जो कथा वहाँ नहीं मिलती उसे “लोक-परंपरा” कहा गया है।": "Every episode records a source from the two great texts; anything found in neither is marked \"folk tradition\".",
-
-  /* ---------- श्लोक-स्क्रीन पर जाँच ---------- */
   "जाँच बाकी — अभी जाँचा नहीं गया": "Review pending — not checked yet",
   "अर्थ हमारा अपना लेखन है — जाँच बाकी।": "the meaning is my own writing — review pending.",
-
-  /* ---------- अर्थ छिपा हुआ है ---------- */
   "अर्थ अभी जाँचा नहीं गया": "Meaning not checked yet",
   "पंक्ति यथावत है, पर जोड़ा गया यह अर्थ भरोसेमंद नहीं लगा — इसलिए छिपाया गया है।": "The line itself is accurate, but this explanation could not be trusted, so it is hidden.",
   "अर्थ अभी छिपा हुआ है — जाँच होने पर ही दिखेगा।": "meaning hidden until reviewed",
   "{m} / {n} अर्थ जाँचे गए।": "{m} of {n} meanings reviewed.",
   "अभी कोई अर्थ जाँचा नहीं गया, इसलिए स्क्रीन पर अर्थ दिखता ही नहीं — केवल पंक्ति और उसका स्रोत।": "No meaning has been reviewed, so none is shown on screen — only the lines and their source.",
-
-  /* ---------- अर्थ की गिनती ---------- */
   "{m} / {n} जाँचे गए — बाकी छिपे हैं।": "{m} of {n} reviewed — the rest are hidden.",
   "पंक्ति स्क्रीन पर है, पर जोड़ा गया यह अर्थ अभी भरोसेमंद नहीं — इसलिए दिखाया नहीं जा रहा।": "The line is on screen, but this explanation is not yet trustworthy, so it is not shown.",
-
-  /* ---------- चालीसा यात्रा ---------- */
   "चालीसा यात्रा": "Chalisa yatra",
   "{r} / {n}": "{r} / {n}",
   "कल:": "Tomorrow:",
@@ -366,7 +321,25 @@ export const EN: Record<string, string> = {
   "चालीसा यात्रा पूरी": "Chalisa yatra complete",
   "सौ आठ प्रसंग पूरे, चालीस चौपाइयाँ के साथ।": "All one hundred and eight units, all forty chaupais.",
   "प्रसाद: जो मंत्र जाँचे गए, वे यहाँ मिलेंगे — अभी कोई जाँचा नहीं गया।": "Prasad: reviewed mantras will appear here — none has been reviewed yet.",
-
-  /* ---------- यात्रा की गिनती (सेटिंग्स) ---------- */
   "चालीसा यात्रा: {r} / {n}": "Chalisa yatra: {r} / {n}",
+  "बैकअप": "Backup",
+  "डाउनलोड बैकअप": "Download backup",
+  "बैकअप आयात करें": "Import backup",
+  "कभी नहीं": "never",
+  "बैकअप फ़ाइल तैयार है।": "Backup file is ready.",
+  "फ़ाइल पढ़ी नहीं जा सकी।": "That file could not be read.",
+  "फ़ाइल पढ़ी नहीं जा सकी — शायद यह अधूरी है।": "That file could not be read - it may be incomplete.",
+  "आपके {n} दिन की साधना सुरक्षित करें — एक बैकअप फ़ाइल डाउनलोड करें।": "Secure your {n} days of practice - download a backup file.",
+  "यह फ़ाइल पढ़ी नहीं जा सकी — शायद यह अधूरी है।": "This file could not be read - it may be incomplete.",
+  "यह बैकअप फ़ाइल नहीं लगती।": "This does not look like a backup file.",
+  "यह किसी और ऐप की फ़ाइल लगती है।": "This looks like a file from a different app.",
+  "यह फ़ाइल नई है या पुरानी — अभी इसे नहीं खोला जा सकता।": "This backup is newer or older than this app understands.",
+  "फ़ाइल में साधना का कोई आँकड़ा नहीं मिला।": "The file contains no practice data.",
+  "फ़ाइल में स्ट्रीक का आँकड़ा नहीं मिला।": "The file contains no streak data.",
+  "फ़ोन में जगह नहीं है — पहले कुछ हटाइए, फिर कोशिश करें।": "No space left on the phone - free some up and try again.",
+  "सब कुछ सिर्फ़ इसी फ़ोन में है। एक फ़ाइल डाउनलोड कर लीजिए — फ़ोन बदलने पर उसे वहीं वापस ला सकेंगे।": "Everything lives only on this phone. Download a file and you can bring it back on a new phone.",
+  "आख़िरी बैकअप:": "Last backup:",
+  "(drikpanchang.com) से ली गई हैं। भारत के पंचांग के हिसाब से चाँद वाले त्योहार एक दिन ऊपर-नीचे हो सकते हैं, और दूसरे देशों में यही तिथि एक दिन पहले पड़ सकती है। अपने इलाके की पंचांग से मिलाकर ऊपर वाली तारीख बदल दीजिए।": " (drikpanchang.com). Indian panchangas put lunar festivals a day either way, and the same date falls a day earlier in other countries. Match it against your local panchang and change the date above if needed.",
+  "फ़ोन बदलें या डेटा मिटे, तो यह सब चला जाएगा। बैकअप से वापस आ जाता है।": "If the phone changes or the data is cleared, all of this is gone. A backup brings it back.",
+  "बैकअप लें": "Take a backup",
 };

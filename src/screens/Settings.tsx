@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { actions, useDerivedState, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   DAY_BOUNDARY_HOUR,
@@ -21,6 +21,7 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
+import { exportState, importState, lastBackupAt, markBackupDone } from "../lib/backup";
 import { CHALISA_SOURCE, chalisaYatra, meaningCheckStats, verseCheckStats } from "../lib/content";
 import { publishedCount, writtenCount } from "../lib/katha";
 import { LanguagePicker } from "../components/LanguagePicker";
@@ -41,6 +42,9 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const [exactAlarm, setExactAlarm] = useState<"granted" | "denied" | "unknown">("unknown");
   const caps = capabilities();
   const verseStats = verseCheckStats();
+  const [backupAt, setBackupAt] = useState(lastBackupAt());
+  const [backupNote, setBackupNote] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const meaningStats = meaningCheckStats();
   const native = isNative();
 
@@ -87,6 +91,51 @@ export function Settings({ onReset }: { onReset: () => void }) {
   async function sendTest() {
     const sent = await sendTestReminder(state.profile.name);
     setNotice(sent ? t("संदेश भेज दिया — देखिए।") : t("संदेश नहीं जा सका।"));
+  }
+
+
+  /** बैकअप फ़ाइल डाउनलोड करो — Web Share हो तो वहाँ, वरना सीधी फ़ाइल */
+  async function downloadBackup() {
+    const { data, filename } = exportState();
+    const file = new File([data], filename, { type: "application/json" });
+    markBackupDone();
+    setBackupAt(lastBackupAt());
+    setBackupNote(t("बैकअप फ़ाइल तैयार है।"));
+
+    try {
+      const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file], title: "Bajrang बैकअप" });
+        return;
+      }
+    } catch {
+      /* उपयोगकर्ता ने साझा करना रद्द किया — सीधी डाउनलोड पर लौटें */
+    }
+
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** फ़ाइल पढ़कर हिस्सेदारी वापस बैठाओ */
+  async function restoreBackup(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const result = importState(text);
+      if (!result.ok) {
+        setBackupNote(result.error ?? t("फ़ाइल पढ़ी नहीं जा सकी।"));
+        return;
+      }
+      // स्टोर ख़ुद ताज़ा हो जाता है — स्क्रीन पर तुरंत बदल जाती है
+    } catch {
+      setBackupNote(t("फ़ाइल पढ़ी नहीं जा सकी — शायद यह अधूरी है।"));
+    }
   }
 
   return (
@@ -432,6 +481,36 @@ export function Settings({ onReset }: { onReset: () => void }) {
         <p className="mt-1 text-xs leading-[1.85] text-ink-500">
           {t("हर प्रसंग पर दो बड़े ग्रंथों में से स्रोत दर्ज है; जो कथा वहाँ नहीं मिलती उसे “लोक-परंपरा” कहा गया है।")}
         </p>
+      </Card>
+
+      <Card className="mt-4 border-saffron-200">
+        <SectionTitle hindi="बैकअप" english="Backup" />
+        <p className="text-sm leading-[1.85] text-ink-700">
+          {t("सब कुछ सिर्फ़ इसी फ़ोन में है। एक फ़ाइल डाउनलोड कर लीजिए — फ़ोन बदलने पर उसे वहीं वापस ला सकेंगे।")}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button variant="primary" size="md" onClick={downloadBackup}>
+            {t("डाउनलोड बैकअप")}
+          </Button>
+          <Button variant="soft" size="md" onClick={() => fileRef.current?.click()}>
+            {t("बैकअप आयात करें")}
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={restoreBackup}
+          />
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          {t("आख़िरी बैकअप:")} {backupAt ? new Date(backupAt).toLocaleString() : t("कभी नहीं")}
+        </p>
+        {backupNote ? (
+          <p className="mt-2 rounded-2xl bg-cream-200/80 px-4 py-2.5 text-xs leading-[1.8] text-ink-700">
+            {backupNote}
+          </p>
+        ) : null}
       </Card>
 
       <Card className="mt-4">

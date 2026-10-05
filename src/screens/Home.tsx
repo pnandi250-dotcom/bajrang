@@ -16,6 +16,7 @@ import { fmt, t as translate, useLang, useT, type Lang } from "../lib/i18n";
 import { Button } from "../components/ui/Button";
 import { Card, Eyebrow } from "../components/ui/Card";
 import { WeekStrip } from "../components/WeekStrip";
+import { lastBackupAt } from "../lib/backup";
 import { LanguagePicker } from "../components/LanguagePicker";
 
 export function Home({
@@ -379,6 +380,7 @@ export function Home({
 
       {/* याद दिलाने की नम्र सलाह — नीचे, ताकि पूजा का बटन साफ़ रहे */}
       <ReminderNudge onOpenSettings={onOpenSettings} />
+      <BackupNudge onOpenSettings={onOpenSettings} />
 
       {yatra.read === 0 && yatra.firstUnit ? (
         <Card className="mt-4 border-saffron-200 bg-cream-200/60">
@@ -435,6 +437,72 @@ function kathaTeaser(read: number, lang: Lang) {
     }),
     cta: translate("कथा पढ़ें"),
   };
+}
+
+/**
+ * ७ दिन की साधना के बाद एक बार याद दिलाना — कि यह सब एक फ़ाइल में सहेजा
+ * जा सकता है। सिर्फ़ एक बार दिखता है, फिर कभी नहीं।
+ */
+function BackupNudge({ onOpenSettings }: { onOpenSettings: () => void }) {
+  const state = useDerivedState();
+  const t = useT();
+
+  // यह कार्ड साल में एक बार — स्ट्रीक बदलने पर दोबारा पढ़ने की ज़रूरत नहीं
+  const hidden = useMemo(
+    () =>
+      (() => {
+        try {
+          return (
+            window.localStorage.getItem("bajrang.backupNudge") === "done" ||
+            Boolean(lastBackupAt())
+          );
+        } catch {
+          return true;
+        }
+      })(),
+    [],
+  );
+
+  const show = state.streak >= 7 && !hidden;
+  if (!show) return null;
+
+  return (
+    <Card className="mt-4 border-saffron-200 bg-white">
+      <div className="flex items-start gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold-200 text-xl">
+          💾
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-bold text-ink-900">
+            {fmt("आपके {n} दिन की साधना सुरक्षित करें — एक बैकअप फ़ाइल डाउनलोड करें।", {
+              n: toNativeDigits(state.streak),
+            })}
+          </p>
+          <p className="mt-1 text-sm leading-[1.8] text-ink-500">
+            {t("फ़ोन बदलें या डेटा मिटे, तो यह सब चला जाएगा। बैकअप से वापस आ जाता है।")}
+          </p>
+          <div className="mt-3 flex gap-2">
+            <Button variant="primary" size="md" onClick={onOpenSettings}>
+              {t("बैकअप लें")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => {
+                try {
+                  window.localStorage.setItem("bajrang.backupNudge", "done");
+                } catch {
+                  /* storage बंद है तो यह बार-बार दिखेगी — कोई हानि नहीं */
+                }
+              }}
+            >
+              {t("अभी नहीं")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 }
 
 /** समय के हिसाब से नमस्कार — सुबह अलग, शाम अलग */
