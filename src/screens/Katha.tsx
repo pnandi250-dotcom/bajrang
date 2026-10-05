@@ -3,6 +3,7 @@ import { KATHA_TOTAL, PARTS, plan, publishedCount, writtenCount, type PlanEntry 
 import { actions, useDerivedState } from "../lib/store";
 import { toNativeDigits } from "../lib/date";
 import { fmt, useT } from "../lib/i18n";
+import { track } from "../lib/analytics";
 import { Card, Eyebrow, SectionTitle } from "../components/ui/Card";
 import { cn } from "../lib/utils";
 
@@ -26,6 +27,7 @@ export function Katha() {
   function toggle(n: number) {
     setOpenN((prev) => (prev === n ? null : n));
     actions.markKathaRead(n);
+    track("katha_read");
   }
 
   const done = live >= KATHA_TOTAL;

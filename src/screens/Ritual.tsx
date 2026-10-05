@@ -4,6 +4,7 @@ import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/a
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
 import { actions, useDerivedState, type KathaReveal } from "../lib/store";
 import { KATHA_TOTAL } from "../lib/katha";
+import { track } from "../lib/analytics";
 import { useLang, useT } from "../lib/i18n";
 import { toNativeDigits } from "../lib/date";
 import { Button } from "../components/ui/Button";
@@ -115,10 +116,16 @@ export function Ritual({
   }, [praying]);
 
   /* ---- घंटी ---- */
+  // पूजा शुरू होते ही गिन लो — यहाँ आवाज़ का फ़ैसला अभी नहीं हुआ
+  useEffect(() => {
+    track("ritual_started");
+  }, []);
+
   const finish = useCallback(() => {
     stopChanting();
     haptic([14, 60, 24]);
     const outcome = actions.completeRitual();
+    track("ritual_completed");
     setResult({
       newStreak: outcome.newStreak,
       crossedMilestone: outcome.crossedMilestone,
@@ -179,6 +186,7 @@ export function Ritual({
     return (
       <div className="app-shell safe-top safe-bottom relative flex min-h-[100dvh] flex-col overflow-hidden bg-linear-to-b from-sindoor-700 via-sindoor-600 to-saffron-700 px-5 py-6 text-cream-100">
         <OmBackdrop />
+      {/* पूजा बीच में छोड़ी गई तो यहाँ गिना जाए — पूजा पूरी होने पर नहीं */}
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center">
           <span className="animate-floaty grid h-20 w-20 place-items-center rounded-full bg-white/12 text-4xl backdrop-blur-sm">
             🔔

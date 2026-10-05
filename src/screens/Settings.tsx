@@ -21,6 +21,7 @@ import {
 } from "../lib/reminder";
 import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
+import { clearMetrics, summary } from "../lib/analytics";
 import { exportState, importState, lastBackupAt, markBackupDone } from "../lib/backup";
 import { CHALISA_SOURCE, chalisaYatra, meaningCheckStats, verseCheckStats } from "../lib/content";
 import { publishedCount, writtenCount } from "../lib/katha";
@@ -43,6 +44,7 @@ export function Settings({ onReset }: { onReset: () => void }) {
   const caps = capabilities();
   const verseStats = verseCheckStats();
   const [backupAt, setBackupAt] = useState(lastBackupAt());
+  const [metrics, setMetrics] = useState(summary());
   const [backupNote, setBackupNote] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const meaningStats = meaningCheckStats();
@@ -481,6 +483,42 @@ export function Settings({ onReset }: { onReset: () => void }) {
         <p className="mt-1 text-xs leading-[1.85] text-ink-500">
           {t("हर प्रसंग पर दो बड़े ग्रंथों में से स्रोत दर्ज है; जो कथा वहाँ नहीं मिलती उसे “लोक-परंपरा” कहा गया है।")}
         </p>
+      </Card>
+
+      <Card className="mt-4">
+        <SectionTitle hindi="मेरा डेटा" english="My data" />
+        <p className="text-sm leading-[1.85] text-ink-700">
+          {t("यहाँ सिर्फ़ गिनती है — पूजा कितनी हुई, कब छूटी, कार्ड कितनी बार बना। न कोई नाम, न कोई सर्वर, न कोई भेजा हुआ आँकड़ा।")}
+        </p>
+        <ul className="mt-3 divide-y divide-cream-300 rounded-2xl bg-cream-100/60 px-4">
+          {metrics.length === 0 ? (
+            <li className="py-3 text-sm text-ink-500">{t("अभी कोई गिनती नहीं।")}</li>
+          ) : (
+            metrics.map((row) => (
+              <li key={row.name} className="flex items-center justify-between py-2.5">
+                <span className="text-sm text-ink-700">{t(row.label)}</span>
+                <span className="text-sm font-bold text-ink-900 tabular-nums">
+                  {toNativeDigits(row.count)}
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+        <div className="mt-3 flex gap-2">
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => {
+              clearMetrics();
+              setMetrics(summary());
+            }}
+          >
+            {t("यह गिनती मिटाएँ")}
+          </Button>
+          <Button variant="ghost" size="md" onClick={onReset}>
+            {t("पूरी साधना मिटाएँ")}
+          </Button>
+        </div>
       </Card>
 
       <Card className="mt-4 border-saffron-200">

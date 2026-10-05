@@ -11,6 +11,7 @@ import { Calendar } from "./screens/Calendar";
 import { Sankalp } from "./screens/Sankalp";
 import { Settings } from "./screens/Settings";
 import { BottomNav, type Tab } from "./components/BottomNav";
+import { track } from "./lib/analytics";
 import { InstallBanner } from "./components/InstallBanner";
 import { ShareCardSheet } from "./components/ShareCardSheet";
 
@@ -36,6 +37,11 @@ export default function App() {
     state.profile.name,
     state.doneToday,
   ]);
+
+  // हर खुलाव पर एक गिनती — सिर्फ़ इसी फ़ोन में (lib/analytics.ts देखिए)
+  useEffect(() => {
+    track("app_open");
+  }, []);
 
   // टैब बदलते ही पिछली जगह लाइटवे, नया टैब अपनी जगह खुले
   useEffect(() => {

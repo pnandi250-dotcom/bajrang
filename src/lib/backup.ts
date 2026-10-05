@@ -10,9 +10,13 @@
 
 import { sanitize, STATE_KEY } from "./state";
 import { reloadFromStorage } from "./store";
+import { allMetrics } from "./analytics";
 
 export const BACKUP_VERSION = 1;
 export const BACKUP_STAMP_KEY = "bajrang.lastBackup";
+
+/** बैकअप में गिनती ले जाने के लिए कुंजी */
+export const BACKUP_METRICS_KEY = "bajrang.metrics.v1";
 
 /** जिन कुंजियों की हिस्सेदारी बैकअप में जाती है */
 const KEYS = [STATE_KEY, "bajrang.lang.v1", "bajrang.reminderNudge"] as const;
@@ -54,6 +58,10 @@ export function exportState(): { data: string; filename: string } {
       data[key] = raw;
     }
   }
+
+  // गिनती भी साथ — यह भी इसी फ़ोन की चीज़ है, उपयोगकर्ता चाहे तो ले जाए
+  const metrics = allMetrics();
+  if (Object.keys(metrics).length > 0) data[BACKUP_METRICS_KEY] = metrics;
 
   const file: BackupFile = {
     version: BACKUP_VERSION,

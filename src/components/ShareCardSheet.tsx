@@ -4,6 +4,7 @@ import { buildShareText, createShareCard, shareFileName } from "../lib/shareCard
 import { toNativeDigits } from "../lib/date";
 import { useT } from "../lib/i18n";
 import { Button } from "./ui/Button";
+import { track } from "../lib/analytics";
 
 type Props = {
   open: boolean;
@@ -103,6 +104,7 @@ export function ShareCardSheet({ open, onClose, periodDays }: Props) {
       `<title>${t("बजरंग कार्ड")}</title><img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto" />`,
     );
     tab.document.close();
+    track("share_card_created");
     setStatus(t("तस्वीर खुल गई — लंबे दबाएँ और 'Save Image' चुनें।"));
   }
 

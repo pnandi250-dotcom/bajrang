@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { plan, type PlanEntry } from "./katha";
 import { chalisaUnitCount } from "./content";
+import { track } from "./analytics";
 
 // ये दोनों UI भी इस्तेमाल करता है (होम और सेटिंग्स)
 export { GRACE_EVERY_DAYS, GRACE_MAX } from "./state";
@@ -271,6 +272,8 @@ export const actions = {
     let graceLeft = state.graceDays - graceUsed;
 
     const newStreak = continued || graceCoversGap ? state.streak + 1 : 1;
+    // सिलसिला टूटा — यह गिना जाए, पर नाम या कोई पहचान नहीं
+    if (!continued && !graceCoversGap && state.streak > 1) track("streak_broken");
 
     // हर 7 दिन पर एक क्षमा कमाओ (ज़्यादा से ज़्यादा 2 साथ में)
     let earnedGrace = false;
@@ -312,6 +315,7 @@ export const actions = {
   markKathaRead(n: number) {
     const read = Math.min(state.kathaRevealed, Math.max(0, Math.floor(n)));
     if (read <= state.kathaRead) return;
+    track("katha_read");
     commit({ ...state, kathaRead: read });
   },
 
