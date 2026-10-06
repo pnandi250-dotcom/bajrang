@@ -23,8 +23,13 @@ import { capabilities } from "../lib/env";
 import { Card, SectionTitle } from "../components/ui/Card";
 import { clearMetrics, summary } from "../lib/analytics";
 import { exportState, importState, lastBackupAt, markBackupDone } from "../lib/backup";
-import { CHALISA_SOURCE, chalisaYatra, meaningCheckStats, verseCheckStats } from "../lib/content";
-import { publishedCount, writtenCount } from "../lib/katha";
+import {
+  CHALISA_SOURCE,
+  chalisaYatra,
+  meaningCheckStats,
+  verseCheckStats,
+} from "../devata/hanuman/content";
+import { publishedCount, writtenCount } from "../devata/hanuman/katha";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { Button } from "../components/ui/Button";
 import { playChime } from "../lib/audio";

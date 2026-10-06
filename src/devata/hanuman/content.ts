@@ -1,4 +1,4 @@
-import { getLang, type Lang } from "./i18n";
+import { getLang, type Lang } from "../../lib/i18n";
 import { VERSE_BN, HOPE_BN, SANKALP_BN } from "./contentBn";
 import { VERSE_EN, HOPE_EN, SANKALP_EN } from "./contentEn";
 
@@ -727,6 +727,12 @@ const YATRA = VERSES.filter((verse) => verse.id.startsWith("chalisa-"));
 function teaserOf(verse: Verse): string {
   const words = verse.lines[0].split(/\s+/).slice(0, 4).join(" ");
   return `${words}…`;
+}
+
+/** यात्रा की किसी इकाई की पंक्ति (0 से) — अर्थ जाँच के बिना नहीं दिखेगा */
+export function chalisaVerseAt(index: number): VerseView | null {
+  const unit = YATRA[index];
+  return unit ? verseView(unit) : null;
 }
 
 /** यात्रा में कुल कितनी इकाइयाँ हैं */

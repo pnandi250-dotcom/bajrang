@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { KATHA_TOTAL, PARTS, plan, publishedCount, writtenCount, type PlanEntry } from "../lib/katha";
+import {
+  KATHA_TOTAL,
+  PARTS,
+  plan,
+  publishedCount,
+  writtenCount,
+  type PlanEntry,
+} from "../devata/hanuman/katha";
 import { actions, useDerivedState } from "../lib/store";
 import { toNativeDigits } from "../lib/date";
 import { fmt, useT } from "../lib/i18n";
@@ -109,8 +116,8 @@ export function Katha() {
 
       {/* सारे प्रसंग — भाग-भाग के क्रम में */}
       {PARTS.map((part) => {
-        const list = entries.filter((entry) => entry.part.id === part.id);
-        const openInPart = list.filter((entry) => !entry.withheld).length;
+        const list = entries.filter((entry: PlanEntry) => entry.part.id === part.id);
+        const openInPart = list.filter((entry: PlanEntry) => !entry.withheld).length;
         if (!openInPart && live === 0 && part.id !== "janam") return null;
         return (
           <section key={part.id} className="mt-6">
@@ -217,7 +224,7 @@ function EpisodeRow({
         <div className="border-t border-saffron-100 px-4 pt-3 pb-4">
           {entry.episode ? (
             <>
-              {entry.episode.story.map((para, index) => (
+              {entry.episode.story.map((para: string, index: number) => (
                 <p
                   key={index}
                   className="mb-2.5 text-[15px] leading-[1.95] text-ink-700 last:mb-0"

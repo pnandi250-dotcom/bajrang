@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { chalisaYatra, hopeOfDay } from "../lib/content";
-import { KATHA_TOTAL, plan, publishedCount, writtenCount } from "../lib/katha";
+import { chalisaYatra, hopeOfDay } from "../devata/hanuman/content";
+import { KATHA_TOTAL, plan, publishedCount, writtenCount } from "../devata/hanuman/katha";
+
 import { useDerivedState, actions, GRACE_EVERY_DAYS, GRACE_MAX } from "../lib/store";
 import {
   addDays,
@@ -238,7 +239,7 @@ export function Home({
           <>
             <p className="label">{verse.source}</p>
             <div className="display mt-3 text-[1.5rem] leading-[1.75] text-ink-900">
-              {verse.lines.map((line) => (
+              {verse.lines.map((line: string) => (
                 <span key={line} className="block">
                   {line}
                 </span>

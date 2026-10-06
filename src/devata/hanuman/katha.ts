@@ -1,6 +1,6 @@
 import { EPISODE_BN } from "./kathaBn";
 import { EPISODE_EN } from "./kathaEn";
-import { getLang, type Lang } from "./i18n";
+import { getLang, type Lang } from "../../lib/i18n";
 
 /*
  * बजरंग कथा — 108 प्रसंग, एक-एक करके

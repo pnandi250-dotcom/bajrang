@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
-import { plan, type PlanEntry } from "./katha";
-import { chalisaUnitCount } from "./content";
+import { plan, type PlanEntry } from "../devata/hanuman/katha";
+import { chalisaUnitCount } from "../devata/hanuman/content";
 import { track } from "./analytics";
 
 // ये दोनों UI भी इस्तेमाल करता है (होम और सेटिंग्स)

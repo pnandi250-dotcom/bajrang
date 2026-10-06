@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDerivedState, actions, MILESTONES } from "../lib/store";
-import { sankalpMessageOfDay } from "../lib/content";
+import { sankalpMessageOfDay } from "../devata/hanuman/content";
 import { calendarDateForDevotionalDay, toNativeDigits } from "../lib/date";
 import { Card, SectionTitle, Eyebrow } from "../components/ui/Card";
 import { Diya } from "../components/ui/Diya";

@@ -6,7 +6,7 @@
  */
 
 import { isValidDateKey, toDateKey } from "./date";
-import { KATHA_TOTAL } from "./katha";
+import { KATHA_TOTAL } from "../devata/hanuman/katha";
 
 export type Profile = {
   name: string;

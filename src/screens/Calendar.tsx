@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { useDerivedState } from "../lib/store";
-import { loadFestivals, nextFestival, saveFestivals } from "../lib/festivals";
+import {
+  loadFestivals,
+  nextFestival,
+  saveFestivals,
+  type Festival,
+} from "../devata/hanuman/festivals";
 import {
   calendarDateForDevotionalDay,
   monthNames,
@@ -35,7 +40,7 @@ export function Calendar() {
   }
 
   function updateFestivalDate(id: string, date: string) {
-    const next = festivals.map((f) => (f.id === id ? { ...f, date } : f));
+    const next = festivals.map((f: Festival) => (f.id === id ? { ...f, date } : f));
     setFestivals(next);
     saveFestivals(next);
   }
@@ -183,7 +188,7 @@ export function Calendar() {
       <Card className="mt-4">
         <SectionTitle hindi="त्योहार की तिथि" english="Festival dates" />
         <div className="space-y-3">
-          {festivals.map((festival) => (
+          {festivals.map((festival: Festival) => (
             <div key={festival.id} className="rounded-2xl bg-cream-200/50 p-3">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-bold text-ink-900">{t(festival.name)}</span>

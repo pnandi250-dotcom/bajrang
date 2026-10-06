@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHALISA_SOURCE, chalisaYatra, type VerseView } from "../lib/content";
+import { CHALISA_SOURCE, chalisaYatra, type VerseView } from "../devata/hanuman/content";
+import { KATHA_TOTAL } from "../devata/hanuman/katha";
 import { playChime, playTempleBell, startChanting, stopChanting } from "../lib/audio";
 import { haptic, requestWakeLock, type WakeLockSentinelLike } from "../lib/device";
 import { actions, useDerivedState, type KathaReveal } from "../lib/store";
-import { KATHA_TOTAL } from "../lib/katha";
+
 import { track } from "../lib/analytics";
 import { useLang, useT } from "../lib/i18n";
 import { toNativeDigits } from "../lib/date";
